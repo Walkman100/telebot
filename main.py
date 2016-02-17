@@ -156,6 +156,8 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply(str(chat_id))
             elif text == '/getchatid':
                 reply(str(chat_id))
+            elif text == '/echo':
+                reply('Usage: /echo\t<text>')
             elif text.startswith('/echo'):
                 send_message(text[5:])
             else:
