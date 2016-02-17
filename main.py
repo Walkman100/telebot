@@ -85,7 +85,7 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('no text')
             return
         else:
-            logging.info('received message: ' + text + ', from ' + message['from'].get('username'))
+            logging.info('received message: ' + text + ', from ' + message['from'].get('first_name'))
 
         def reply(msg=None, img=None):
             if msg:
