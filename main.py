@@ -130,6 +130,8 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response:')
             logging.info(resp)
+        
+        # COMMANDS BELOW
 
         if text.startswith('/'):
             if text == '/start':
@@ -138,6 +140,10 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/stop':
                 reply('Bot disabled')
                 setEnabled(chat_id, False)
+            elif text == '/about':
+                reply('telebot created by yukuku: https://github.com/yukuku/telebot\nthis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
+            elif text == '/help':
+                send_message('Available commands:\n/start\tEnables the bot in this chat\n/stop\tDisables the bot in this chat\n/about\tShow version info\n/help\tShow this help\n/getChatId\tShow this chat\'s ID\n/image\tSend a randomly generated image')
             elif text == '/image':
                 img = Image.new('RGB', (512, 512))
                 base = random.randint(0, 16777216)
@@ -146,14 +152,13 @@ class WebhookHandler(webapp2.RequestHandler):
                 output = StringIO.StringIO()
                 img.save(output, 'JPEG')
                 reply(img=output.getvalue())
+            elif text == '/getChatId':
+                reply(str(chat_id))
             else:
-                reply('What command?')
+                reply('Unknown command "text". type /help to see existing commands')
 
-        # CUSTOMIZE FROM HERE
-        #  non-slash commands below, commands starting with / above
-
-        elif 'who are you' in text:
-            reply('telebot created by yukuku: https://github.com/yukuku/telebot\nthis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
+        # elif 'who are you' in text:
+        #     reply('')
         elif 'what time' in text:
             reply('look at the corner of your screen!')
         else:
