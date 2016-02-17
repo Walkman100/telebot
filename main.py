@@ -135,10 +135,10 @@ class WebhookHandler(webapp2.RequestHandler):
         if text.startswith('/'):
             if text.endswith('@WalkmanBot'): text = text[:-11]
             if text == '/start':
-                reply('Chat *enabled*: /help for commands')
+                reply('SimSimi responses *enabled* in this chat: /help for other commands')
                 setEnabled(chat_id, True)
             elif text == '/stop':
-                reply('Chat *disabled*')
+                reply('SimSimi responses *disabled* in this chat')
                 setEnabled(chat_id, False)
             elif text == '/about':
                 reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
@@ -161,7 +161,7 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text.startswith('/echo'):
                 send_message(text[5:])
             else:
-                reply('Unknown command `' + text + '`. type /help to see existing commands')
+                reply('Unknown command `' + text + '`. use /help to see existing commands')
 
         # elif 'who are you' in text:
         #     reply('')
