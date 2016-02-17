@@ -91,6 +91,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
+                    'parse_mode': 'Markdown',
                     'disable_web_page_preview': 'true',
                     'reply_to_message_id': str(message_id),
                 })).read()
@@ -110,7 +111,7 @@ class WebhookHandler(webapp2.RequestHandler):
 
         if text.startswith('/'):
             if text == '/start':
-                reply('Bot enabled')
+                reply('Chat enabled!')
                 setEnabled(chat_id, True)
             elif text == '/stop':
                 reply('Bot disabled')
@@ -127,9 +128,10 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('What command?')
 
         # CUSTOMIZE FROM HERE
+        #  non-slash commands below, commands starting with / above
 
         elif 'who are you' in text:
-            reply('telebot starter kit, created by yukuku: https://github.com/yukuku/telebot')
+            reply('telebot created by yukuku: https://github.com/yukuku/telebot\nthis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
         elif 'what time' in text:
             reply('look at the corner of your screen!')
         else:
