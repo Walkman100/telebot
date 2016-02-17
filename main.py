@@ -66,8 +66,7 @@ class WebhookHandler(webapp2.RequestHandler):
     def post(self):
         urlfetch.set_default_fetch_deadline(60)
         body = json.loads(self.request.body)
-        logging.info('request body:')
-        logging.info(body)
+        logging.info('request body: ' + str(body))
         self.response.write(json.dumps(body))
 
         update_id = body['update_id']
@@ -85,6 +84,8 @@ class WebhookHandler(webapp2.RequestHandler):
         if not text:
             logging.info('no text')
             return
+        else:
+            logging.info('received message: ' + text + ', from ' + message['from'].get('username'))
 
         def reply(msg=None, img=None):
             if msg:
@@ -106,8 +107,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.error('no msg or img specified')
                 resp = None
 
-            logging.info('send response:')
-            logging.info(resp)
+            logging.info('send response: ' + str(resp))
 
         def send_message(msg=None, img=None):
             # exactly the same as reply() but no reply_to_message_id parameter
@@ -128,8 +128,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.error('no msg or img specified')
                 resp = None
 
-            logging.info('send response:')
-            logging.info(resp)
+            logging.info('send response: ' + str(resp))
         
         # COMMANDS BELOW
 
