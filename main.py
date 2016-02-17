@@ -134,6 +134,7 @@ class WebhookHandler(webapp2.RequestHandler):
         # COMMANDS BELOW
 
         if text.startswith('/'):
+            if text.endswith('@WalkmanBot'): text = text[:-11]
             if text == '/start':
                 reply('Chat *enabled*: /help for commands')
                 setEnabled(chat_id, True)
