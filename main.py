@@ -143,7 +143,7 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/about':
                 reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
-                send_message('*Available commands*:\n/start\t\tEnables the bot in this chat\n/stop\t\tDisables the bot in this chat\n/about\t\tShow version info\n/help\t\tShow this help\n/getChatId\tShow this chat\'s ID\n/image\t\tSend a randomly generated image')
+                send_message('*Available commands*:\n/start\t\tEnables the bot in this chat\n/stop\t\tDisables the bot in this chat\n/about\t\tShow version info\n/help\t\tShow this help\n/getChatId\tShow this chat\'s ID\n/echo\t<text>\tRespond with <text>\n/image\t\tSend a randomly generated image')
             elif text == '/image':
                 img = Image.new('RGB', (512, 512))
                 base = random.randint(0, 16777216)
@@ -156,8 +156,10 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply(str(chat_id))
             elif text == '/getchatid':
                 reply(str(chat_id))
+            elif text.startswith('/echo'):
+                send_message(text[5:])
             else:
-                reply('Unknown command "_' + text + '_". type /help to see existing commands')
+                reply('Unknown command `' + text + '`. type /help to see existing commands')
 
         # elif 'who are you' in text:
         #     reply('')
