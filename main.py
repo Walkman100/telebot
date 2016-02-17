@@ -68,7 +68,7 @@ class WebhookHandler(webapp2.RequestHandler):
         body = json.loads(self.request.body)
         logging.info('request body: ' + str(body))
         self.response.write(json.dumps(body))
-
+        
         update_id = body['update_id']
         try:
             message = body['message']
@@ -80,13 +80,13 @@ class WebhookHandler(webapp2.RequestHandler):
         fr = message.get('from')
         chat = message['chat']
         chat_id = chat['id']
-
+        
         if not text:
             logging.info('no text')
             return
         else:
             logging.info('received message: ' + text + ', from ' + message['from'].get('first_name'))
-
+        
         def reply(msg=None, img=None):
             if msg:
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
@@ -108,7 +108,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 resp = None
 
             logging.info('send response: ' + str(resp))
-
+        
         def send_message(msg=None, img=None):
             # exactly the same as reply() but no reply_to_message_id parameter
             if msg:
@@ -131,7 +131,7 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('send response: ' + str(resp))
         
         # COMMANDS BELOW
-
+        
         if text.startswith('/'):
             if text.endswith('@WalkmanBot'): text = text[:-11]
             if text == '/start':
@@ -162,7 +162,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 send_message(text[5:])
             else:
                 reply('Unknown command `' + text + '`. use /help to see existing commands')
-
+        
         # elif 'who are you' in text:
         #     reply('')
         elif 'what time' in text:
