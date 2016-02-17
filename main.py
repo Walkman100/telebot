@@ -109,6 +109,28 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('send response:')
             logging.info(resp)
 
+        def send_message(msg=None, img=None):
+            # exactly the same as reply() but no reply_to_message_id parameter
+            if msg:
+                resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
+                    'chat_id': str(chat_id),
+                    'text': msg.encode('utf-8'),
+                    'parse_mode': 'Markdown',
+                    'disable_web_page_preview': 'true',
+                })).read()
+            elif img:
+                resp = multipart.post_multipart(BASE_URL + 'sendPhoto', [
+                    ('chat_id', str(chat_id)),
+                ], [
+                    ('photo', 'image.jpg', img),
+                ])
+            else:
+                logging.error('no msg or img specified')
+                resp = None
+
+            logging.info('send response:')
+            logging.info(resp)
+
         if text.startswith('/'):
             if text == '/start':
                 reply('Chat enabled!')
