@@ -195,11 +195,12 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text.startswith('/shout'):
                 text = text[6:]
                 if text.startswith('@WalkmanBot'): text = text[11:]
+                if text.startswith(' '): text = text[1:]
                 text = text.upper()
                 shoutTxt = '<code>'
                 for letter in text:
                     shoutTxt = shoutTxt + letter + ' '
-                text = text[2:]
+                text = text[1:]
                 for letter in text:
                     shoutTxt = shoutTxt + '\n' + letter
                 shoutTxt = shoutTxt + '</code>'
