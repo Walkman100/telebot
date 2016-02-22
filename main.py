@@ -130,6 +130,26 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response: ' + str(resp))
         
+        def send_message_noparse(msg=None, img=None):
+            # exactly the same as reply() but no reply_to_message_id parameter
+            if msg:
+                resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
+                    'chat_id': str(chat_id),
+                    'text': msg.encode('utf-8'),
+                    'disable_web_page_preview': 'true',
+                })).read()
+            elif img:
+                resp = multipart.post_multipart(BASE_URL + 'sendPhoto', [
+                    ('chat_id', str(chat_id)),
+                ], [
+                    ('photo', 'image.jpg', img),
+                ])
+            else:
+                logging.error('no msg or img specified')
+                resp = None
+
+            logging.info('send response: ' + str(resp))
+        
         # COMMANDS BELOW
         
         if text.startswith('/'):
@@ -143,7 +163,7 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/about':
                 reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
-                send_message('*Available commands*:\n/start\t\tEnables SimSimi responses in this chat\n/stop\t\tDisables SimSimi responses in this chat\n/about\t\tShow version info\n/help\t\tShow this help\n/getChatId\tShow this chat\'s ID\n/echo\t<text>\tRespond with <text>\n/shout\t<text>\techo <text> in caps\n/image\t\tSend a randomly generated image')
+                send_message('*Available commands*:\n/start\t\tEnables SimSimi responses in this chat\n/stop\t\tDisables SimSimi responses in this chat\n/about\t\tShow version info\n/help\t\tShow this help\n/getChatId\tShow this chat\'s ID\n/echo\t<text>\tRespond with <text>. Supports markdown\n/shout\t<text>\techo <text> in caps\n/image\t\tSend a randomly generated image')
             elif text == '/image':
                 img = Image.new('RGB', (512, 512))
                 base = random.randint(0, 16777216)
@@ -172,9 +192,9 @@ class WebhookHandler(webapp2.RequestHandler):
                 text = text[2:]
                 for letter in text:
                     shoutTxt = shoutTxt + '\n' + letter
-                send_message(str(shoutTxt))
+                send_message_noparse(str(shoutTxt))
             else:
-                reply('Unknown command `' + text + '`. use /help to see existing commands')
+                reply('Unknown command `' + text + '`. Use /help to see existing commands')
         
         # elif 'who are you' in text:
         #     reply('')
