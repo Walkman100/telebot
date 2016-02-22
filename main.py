@@ -197,14 +197,21 @@ class WebhookHandler(webapp2.RequestHandler):
                 if text.startswith('@WalkmanBot'): text = text[11:]
                 if text.startswith(' '): text = text[1:]
                 text = text.upper()
+                
                 shoutTxt = '<code>'
                 for letter in text:
                     shoutTxt = shoutTxt + letter + ' '
+                
                 text = text[1:]
                 for letter in text:
                     shoutTxt = shoutTxt + '\n' + letter
                 shoutTxt = shoutTxt + '</code>'
-                send_message_html(str(shoutTxt))
+                
+                try:
+                    send_message_html(str(shoutTxt))
+                except UnicodeEncodeError, err:
+                    reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
+            
             else:
                 reply('Unknown command `' + text + '`. Use /help to see existing commands')
         
