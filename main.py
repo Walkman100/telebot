@@ -143,7 +143,7 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/about':
                 reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
-                send_message('*Available commands*:\n/start\t\tEnables the bot in this chat\n/stop\t\tDisables the bot in this chat\n/about\t\tShow version info\n/help\t\tShow this help\n/getChatId\tShow this chat\'s ID\n/echo\t<text>\tRespond with <text>\n/image\t\tSend a randomly generated image')
+                send_message('*Available commands*:\n/start\t\tEnables SimSimi responses in this chat\n/stop\t\tDisables SimSimi responses in this chat\n/about\t\tShow version info\n/help\t\tShow this help\n/getChatId\tShow this chat\'s ID\n/echo\t<text>\tRespond with <text>\n/shout\t<text>\techo <text> in caps\n/image\t\tSend a randomly generated image')
             elif text == '/image':
                 img = Image.new('RGB', (512, 512))
                 base = random.randint(0, 16777216)
@@ -160,6 +160,16 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('Usage: /echo\t<text>')
             elif text.startswith('/echo'):
                 send_message(text[5:])
+            elif text == '/shout':
+                reply('Usage: /shout\t<text>')
+            elif text.startswith('/shout'):
+                text = text[6:]
+                if text.startswith('@WalkmanBot'): text = text[11:]
+                text = text.upper()
+                shoutTxt = ' '
+                for letter in text:
+                    shoutTxt = shoutTxt + letter + ' '
+                send_message(str(shoutTxt))
             else:
                 reply('Unknown command `' + text + '`. use /help to see existing commands')
         
