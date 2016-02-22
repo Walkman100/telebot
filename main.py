@@ -163,7 +163,16 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/about':
                 reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
-                send_message('*Available commands*:\n/start - Enables SimSimi responses in this chat\n/stop - Disables SimSimi responses in this chat\n/about - Show version info\n/help - Show this help\n/getChatId - Show this chat\'s ID\n/echo <text> - Respond with <text>. Supports markdown\n/shout <text> - Shout <text> in caps\n/image - Send a randomly generated image')
+                helpText = '*Available commands*'
+                helpText = helpText + '\n/start - Enables SimSimi responses in this chat'
+                helpText = helpText + '\n/stop - Disables SimSimi responses in this chat'
+                helpText = helpText + '\n/about - Show version info'
+                helpText = helpText + '\n/help - Show this help'
+                helpText = helpText + '\n/getChatId - Show this chat\'s ID'
+                helpText = helpText + '\n/echo <text> - Respond with <text>. Supports markdown'
+                helpText = helpText + '\n/shout <text> - Shout <text> in caps'
+                helpText = helpText + '\n/image - Send a randomly generated image'
+                send_message(helpText)
             elif text == '/image':
                 img = Image.new('RGB', (512, 512))
                 base = random.randint(0, 16777216)
