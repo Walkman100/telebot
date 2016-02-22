@@ -169,6 +169,9 @@ class WebhookHandler(webapp2.RequestHandler):
                 shoutTxt = ' '
                 for letter in text:
                     shoutTxt = shoutTxt + letter + ' '
+                text = text[2:]
+                for letter in text:
+                    shoutTxt = shoutTxt + '\n' + letter
                 send_message(str(shoutTxt))
             else:
                 reply('Unknown command `' + text + '`. use /help to see existing commands')
