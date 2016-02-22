@@ -130,12 +130,13 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response: ' + str(resp))
         
-        def send_message_noparse(msg=None, img=None):
+        def send_message_html(msg=None, img=None):
             # exactly the same as reply() but no reply_to_message_id parameter
             if msg:
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
+                    'parse_mode': 'HTML',
                     'disable_web_page_preview': 'true',
                 })).read()
             elif img:
@@ -195,13 +196,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 text = text[6:]
                 if text.startswith('@WalkmanBot'): text = text[11:]
                 text = text.upper()
-                shoutTxt = ' '
+                shoutTxt = '<code>'
                 for letter in text:
                     shoutTxt = shoutTxt + letter + ' '
                 text = text[2:]
                 for letter in text:
                     shoutTxt = shoutTxt + '\n' + letter
-                send_message_noparse(str(shoutTxt))
+                shoutTxt = shoutTxt + '</code>'
+                send_message_html(str(shoutTxt))
             else:
                 reply('Unknown command `' + text + '`. Use /help to see existing commands')
         
