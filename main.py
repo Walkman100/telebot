@@ -25,6 +25,10 @@ class EnableStatus(ndb.Model):
     # key name: str(chat_id)
     enabled = ndb.BooleanProperty(indexed=False, default=False)
 
+class UnknownCommandStatus(ndb.Model):
+    # key name: str(chat_id)
+    enabled = ndb.BooleanProperty(indexed=False, default=False)
+
 
 # ================================
 
@@ -38,6 +42,17 @@ def getEnabled(chat_id):
     if es:
         return es.enabled
     return False
+
+def setUnknownCommandEnabled(chat_id, yes):
+    es = UnknownCommandStatus.get_or_insert(str(chat_id))
+    es.enabled = yes
+    es.put()
+
+def getUnknownCommandEnabled(chat_id):
+    es = UnknownCommandStatus.get_by_id(str(chat_id))
+    if es:
+        return es.enabled
+    return True
 
 
 # ================================
@@ -80,6 +95,8 @@ class WebhookHandler(webapp2.RequestHandler):
         fr = message.get('from')
         chat = message['chat']
         chat_id = chat['id']
+        
+        admins = 61311478
         
         if not text:
             logging.info('no text')
@@ -161,6 +178,16 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/stop':
                 reply('SimSimi responses *disabled* in this chat')
                 setEnabled(chat_id, False)
+            elif text == '/ucs':
+                if message['from'].get('id') == admins:
+                    if getUnknownCommandEnabled(chat_id):
+                        setUnknownCommandEnabled(chat_id, False)
+                        reply('unknown command messages disabled')
+                    else:
+                        setUnknownCommandEnabled(chat_id, True)
+                        reply('unknown command messages enabled')
+                else:
+                    reply('You are not an admin!')
             elif text == '/about':
                 reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
@@ -213,7 +240,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
             
             else:
-                reply('Unknown command `' + text + '`. Use /help to see existing commands')
+                if getUnknownCommandEnabled(chat_id):
+                    reply('Unknown command `' + text + '`. Use /help to see existing commands')
         
         # elif 'who are you' in text:
         #     reply('')
