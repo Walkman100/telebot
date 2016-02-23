@@ -189,7 +189,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 else:
                     reply('You are not an admin!')
             elif text == '/about':
-                reply('telebot created by yukuku ([source](https://github.com/yukuku/telebot))\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
+                reply('based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
                 helpText = '*Available commands*'
                 helpText = helpText + '\n/start - Enables SimSimi responses in this chat'
@@ -197,6 +197,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText = helpText + '\n/about - Show version info'
                 helpText = helpText + '\n/help - Show this help'
                 helpText = helpText + '\n/getChatId - Show this chat\'s ID'
+                helpText = helpText + '\n/getUserID - Show your UserID'
                 helpText = helpText + '\n/echo <text> - Respond with <text>. Supports markdown'
                 helpText = helpText + '\n/shout <text> - Shout <text> in caps'
                 helpText = helpText + '\n/image - Send a randomly generated image'
@@ -213,6 +214,10 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply(str(chat_id))
             elif text == '/getchatid':
                 reply(str(chat_id))
+            elif text == '/getUserID':
+                reply(str(message['from'].get('id')))
+            elif text == '/getuserid':
+                reply(str(message['from'].get('id')))
             elif text == '/echo':
                 reply('Usage: /echo\t<text>')
             elif text.startswith('/echo'):
