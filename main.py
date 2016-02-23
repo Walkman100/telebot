@@ -102,7 +102,7 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('no text')
             return
         else:
-            logging.info('received message: ' + text + ', from ' + message['from'].get('first_name'))
+            logging.info('received message: ' + text + ', from ' + fr['first_name'])
         
         def reply(msg=None, img=None):
             if msg:
@@ -179,7 +179,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('SimSimi responses *disabled* in this chat')
                 setEnabled(chat_id, False)
             elif text == '/ucs':
-                if message['from'].get('id') in admins:
+                if fr['id'] in admins:
                     if getUnknownCommandEnabled(chat_id):
                         setUnknownCommandEnabled(chat_id, False)
                         reply('unknown command messages disabled')
@@ -215,9 +215,9 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text == '/getchatid':
                 reply(str(chat_id))
             elif text == '/getUserID':
-                reply(str(message['from'].get('id')))
+                reply(str(fr['id']))
             elif text == '/getuserid':
-                reply(str(message['from'].get('id')))
+                reply(str(fr['id']))
             elif text == '/echo':
                 reply('Usage: /echo\t<text>')
             elif text.startswith('/echo'):
