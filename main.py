@@ -96,7 +96,7 @@ class WebhookHandler(webapp2.RequestHandler):
         chat = message['chat']
         chat_id = chat['id']
         
-        admins = 61311478
+        admins = [61311478, 36713967]
         
         if not text:
             logging.info('no text')
@@ -148,7 +148,7 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info('send response: ' + str(resp))
         
         def send_message_html(msg=None, img=None):
-            # exactly the same as reply() but no reply_to_message_id parameter
+            # send a message and parse it as html
             if msg:
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
@@ -179,7 +179,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('SimSimi responses *disabled* in this chat')
                 setEnabled(chat_id, False)
             elif text == '/ucs':
-                if message['from'].get('id') == admins:
+                if message['from'].get('id') in admins:
                     if getUnknownCommandEnabled(chat_id):
                         setUnknownCommandEnabled(chat_id, False)
                         reply('unknown command messages disabled')
