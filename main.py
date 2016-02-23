@@ -124,14 +124,15 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response: ' + str(resp))
         
-        def send_message(msg=None, img=None):
-            # exactly the same as reply() but no reply_to_message_id parameter
+        def reply_html(msg=None, img=None):
+            # exactly the same as reply() but parse it as html
             if msg:
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
-                    'parse_mode': 'Markdown',
+                    'parse_mode': 'HTML',
                     'disable_web_page_preview': 'true',
+                    'reply_to_message_id': str(message_id),
                 })).read()
             elif img:
                 resp = multipart.post_multipart(BASE_URL + 'sendPhoto', [
@@ -145,13 +146,13 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response: ' + str(resp))
         
-        def send_message_html(msg=None, img=None):
-            # send a message and parse it as html
+        def send_message(msg=None, img=None):
+            # exactly the same as reply() but no reply_to_message_id parameter
             if msg:
                 resp = urllib2.urlopen(BASE_URL + 'sendMessage', urllib.urlencode({
                     'chat_id': str(chat_id),
                     'text': msg.encode('utf-8'),
-                    'parse_mode': 'HTML',
+                    'parse_mode': 'Markdown',
                     'disable_web_page_preview': 'true',
                 })).read()
             elif img:
@@ -244,7 +245,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 shoutTxt = shoutTxt + '</code>'
                 
                 try:
-                    send_message_html(str(shoutTxt))
+                    reply_html(str(shoutTxt))
                 except UnicodeEncodeError, err:
                     reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
             
