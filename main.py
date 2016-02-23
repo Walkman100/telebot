@@ -248,7 +248,17 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply_html(str(shoutTxt))
                 except UnicodeEncodeError, err:
                     reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
-            
+            elif text == '/curl':
+                reply('Usage: /curl <url>')
+            elif text.startswith('/curl'):
+                text = text[5:]
+                send_message('Downloading...')
+                try:
+                    back = urllib2.urlopen(text).read()
+                    reply('`' + str(back) + '`')
+                except urllib2.HTTPError, err:
+                    logging.info('ERROR: ' + str(err))
+                    reply('ERROR: ' + str(err))
             else:
                 if getUnknownCommandEnabled(chat_id):
                     reply('Unknown command `' + text + '`. Use /help to see existing commands')
