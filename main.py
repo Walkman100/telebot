@@ -96,8 +96,6 @@ class WebhookHandler(webapp2.RequestHandler):
         chat = message['chat']
         chat_id = chat['id']
         
-        admins = [61311478, 36713967]
-        
         if not text:
             logging.info('no text')
             return
@@ -168,18 +166,24 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response: ' + str(resp))
         
+        admins = [61311478, 36713967]
+        def isSudo():
+            if fr['id'] in admins:
+                return True
+            return False
+        
         # COMMANDS BELOW
         
         if text.startswith('/'):
             if text.endswith('@WalkmanBot'): text = text[:-11]
             if text == '/start':
-                reply('SimSimi responses *enabled* in this chat: /help for other commands')
+                reply('Bot *enabled* in this chat: /help for other commands')
                 setEnabled(chat_id, True)
             elif text == '/stop':
-                reply('SimSimi responses *disabled* in this chat')
+                reply('Bot *disabled* in this chat')
                 setEnabled(chat_id, False)
             elif text == '/ucs':
-                if fr['id'] in admins:
+                if isSudo():
                     if getUnknownCommandEnabled(chat_id):
                         setUnknownCommandEnabled(chat_id, False)
                         reply('unknown command messages disabled')
@@ -192,8 +196,8 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply('based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
             elif text == '/help':
                 helpText = '*Available commands*'
-                helpText = helpText + '\n/start - Enables SimSimi responses in this chat'
-                helpText = helpText + '\n/stop - Disables SimSimi responses in this chat'
+                helpText = helpText + '\n/start - Enables bot in this chat'
+                helpText = helpText + '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
                 helpText = helpText + '\n/about - Show version info'
                 helpText = helpText + '\n/help - Show this help'
                 helpText = helpText + '\n/getChatId - Show this chat\'s ID'
