@@ -166,7 +166,7 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info('send response: ' + str(resp))
         
-        admins = [61311478, 36713967]
+        admins = [61311478, 83416231]
         def isSudo():
             if fr['id'] in admins:
                 return True
