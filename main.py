@@ -177,13 +177,13 @@ class WebhookHandler(webapp2.RequestHandler):
         
         if text.startswith('/'):
             if text.endswith('@WalkmanBot'): text = text[:-11]
-            if text == '/start':
+            if text.lower() == '/start':
                 reply('Bot *enabled* in this chat: /help for other commands')
                 setEnabled(chat_id, True)
-            elif text == '/stop':
+            elif text.lower() == '/stop':
                 reply('Bot *disabled* in this chat')
                 setEnabled(chat_id, False)
-            elif text == '/ucs':
+            elif text.lower() == '/ucs':
                 if isSudo():
                     if getUnknownCommandEnabled(chat_id):
                         setUnknownCommandEnabled(chat_id, False)
@@ -193,9 +193,9 @@ class WebhookHandler(webapp2.RequestHandler):
                         reply('unknown command messages enabled')
                 else:
                     reply('You are not an admin!')
-            elif text == '/about':
+            elif text.lower() == '/about':
                 reply('based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
-            elif text == '/help':
+            elif text.lower() == '/help':
                 helpText = '*Available commands*'
                 helpText = helpText + '\n/start - Enables bot in this chat'
                 helpText = helpText + '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
@@ -207,7 +207,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText = helpText + '\n/shout <text> - Shout <text> in caps'
                 helpText = helpText + '\n/image - Send a randomly generated image'
                 send_message(helpText)
-            elif text == '/image':
+            elif text.lower() == '/image':
                 img = Image.new('RGB', (512, 512))
                 base = random.randint(0, 16777216)
                 pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
@@ -215,21 +215,17 @@ class WebhookHandler(webapp2.RequestHandler):
                 output = StringIO.StringIO()
                 img.save(output, 'JPEG')
                 reply(img=output.getvalue())
-            elif text == '/getChatId':
+            elif text.lower() == '/getchatid':
                 reply(str(chat_id))
-            elif text == '/getchatid':
-                reply(str(chat_id))
-            elif text == '/getUserID':
+            elif text.lower() == '/getuserid':
                 reply(str(fr['id']))
-            elif text == '/getuserid':
-                reply(str(fr['id']))
-            elif text == '/echo':
+            elif text.lower() == '/echo':
                 reply('Usage: /echo\t<text>')
-            elif text.startswith('/echo'):
+            elif text.lower().startswith('/echo'):
                 send_message(text[5:])
-            elif text == '/shout':
+            elif text.lower() == '/shout':
                 reply('Usage: /shout\t<text>')
-            elif text.startswith('/shout'):
+            elif text.lower().startswith('/shout'):
                 text = text[6:]
                 if text.startswith('@WalkmanBot'): text = text[11:]
                 if text.startswith(' '): text = text[1:]
@@ -251,9 +247,9 @@ class WebhookHandler(webapp2.RequestHandler):
                 except urllib2.HTTPError, err:
                     logging.info('ERROR: ' + str(err))
                     reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
-            elif text == '/curl':
+            elif text.lower() == '/curl':
                 reply('Usage: /curl <url>')
-            elif text.startswith('/curl'):
+            elif text.lower().startswith('/curl'):
                 text = text[5:]
                 send_message('Downloading...')
                 try:
