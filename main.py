@@ -233,7 +233,7 @@ class WebhookHandler(webapp2.RequestHandler):
             while number >= 1:
                 number = number - 1
                 returnString = returnString + "I"
-            reply(returnString)
+            reply('`' + returnString + '`')
         def outputArabicNumber(RomanNumber):
             RomanNumber = RomanNumber.upper()
             nonvalid = ""
@@ -271,7 +271,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         elif RomanNumber[i] == "5": ArabicNumber = ArabicNumber - 100
                         elif RomanNumber[i] == "6": ArabicNumber = ArabicNumber - 500
                         elif RomanNumber[i] == "7": ArabicNumber = ArabicNumber - 1000
-                reply(str(ArabicNumber))
+                reply('`' + str(ArabicNumber) + '`')
         
         # COMMANDS BELOW
         
