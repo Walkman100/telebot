@@ -18,7 +18,6 @@ TOKEN = '183074970:<REDACTED>'
 
 BASE_URL = 'https://api.telegram.org/bot' + TOKEN + '/'
 
-
 # ================================
 
 class EnableStatus(ndb.Model):
@@ -28,7 +27,6 @@ class EnableStatus(ndb.Model):
 class UnknownCommandStatus(ndb.Model):
     # key name: str(chat_id)
     enabled = ndb.BooleanProperty(indexed=False, default=False)
-
 
 # ================================
 
@@ -53,7 +51,6 @@ def getUnknownCommandEnabled(chat_id):
     if es:
         return es.enabled
     return True
-
 
 # ================================
 
@@ -207,6 +204,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n/echo <text> - Respond with <text>. Supports markdown'
                     helpText = helpText + '\n/shout <text> - Shout <text> in caps'
                     helpText = helpText + '\n/image - Send a randomly generated image'
+                    helpText = helpText + '\n/curl <url> - Return the text of <url> (Warning: reply could be very long!)'
+                    # helpText = helpText + '\n/'
                     send_message(helpText)
                 elif text.lower() == '/image':
                     img = Image.new('RGB', (512, 512))
@@ -223,7 +222,10 @@ class WebhookHandler(webapp2.RequestHandler):
                 elif text.lower() == '/echo':
                     reply('Usage: /echo <text>')
                 elif text.lower().startswith('/echo'):
-                    send_message(text[5:])
+                    text = text[5:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    send_message(text)
                 elif text.lower() == '/shout':
                     reply('Usage: /shout <text>')
                 elif text.lower().startswith('/shout'):
@@ -252,6 +254,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply('Usage: /curl <url>')
                 elif text.lower().startswith('/curl'):
                     text = text[5:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
                     send_message('Downloading...')
                     try:
                         back = urllib2.urlopen(text).read()
