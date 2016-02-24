@@ -175,109 +175,107 @@ class WebhookHandler(webapp2.RequestHandler):
         
         # COMMANDS BELOW
         
-        if text.startswith('/'):
-            if text.endswith('@WalkmanBot'): text = text[:-11]
-            if text.lower() == '/start':
-                reply('Bot *enabled* in this chat: /help for other commands')
-                setEnabled(chat_id, True)
-            elif text.lower() == '/stop':
-                reply('Bot *disabled* in this chat')
-                setEnabled(chat_id, False)
-            elif text.lower() == '/ucs':
-                if isSudo():
-                    if getUnknownCommandEnabled(chat_id):
-                        setUnknownCommandEnabled(chat_id, False)
-                        reply('unknown command messages disabled')
+        if text.endswith('@WalkmanBot'): text = text[:-11]
+        if text.lower() == '/start':
+            reply('Bot *enabled* in this chat: /help for commands')
+            setEnabled(chat_id, True)
+        elif getEnabled(chat_id):
+            if text.startswith('/'):
+                if text.lower() == '/stop':
+                    reply('Bot *disabled* in this chat: /start to re-enable')
+                    setEnabled(chat_id, False)
+                elif text.lower() == '/ucs':
+                    if isSudo():
+                        if getUnknownCommandEnabled(chat_id):
+                            setUnknownCommandEnabled(chat_id, False)
+                            reply('unknown command messages disabled')
+                        else:
+                            setUnknownCommandEnabled(chat_id, True)
+                            reply('unknown command messages enabled')
                     else:
-                        setUnknownCommandEnabled(chat_id, True)
-                        reply('unknown command messages enabled')
+                        reply('You are not an admin!')
+                elif text.lower() == '/about':
+                    reply('based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
+                elif text.lower() == '/help':
+                    helpText = '*Available commands*'
+                    helpText = helpText + '\n/start - Enables bot in this chat'
+                    helpText = helpText + '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
+                    helpText = helpText + '\n/about - Show version info'
+                    helpText = helpText + '\n/help - Show this help'
+                    helpText = helpText + '\n/getChatID - Show this chat\'s ID'
+                    helpText = helpText + '\n/getUserID - Show your UserID'
+                    helpText = helpText + '\n/echo <text> - Respond with <text>. Supports markdown'
+                    helpText = helpText + '\n/shout <text> - Shout <text> in caps'
+                    helpText = helpText + '\n/image - Send a randomly generated image'
+                    send_message(helpText)
+                elif text.lower() == '/image':
+                    img = Image.new('RGB', (512, 512))
+                    base = random.randint(0, 16777216)
+                    pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
+                    img.putdata(pixels)
+                    output = StringIO.StringIO()
+                    img.save(output, 'JPEG')
+                    reply(img=output.getvalue())
+                elif text.lower() == '/getchatid':
+                    reply(str(chat_id))
+                elif text.lower() == '/getuserid':
+                    reply(str(fr['id']))
+                elif text.lower() == '/echo':
+                    reply('Usage: /echo <text>')
+                elif text.lower().startswith('/echo'):
+                    send_message(text[5:])
+                elif text.lower() == '/shout':
+                    reply('Usage: /shout <text>')
+                elif text.lower().startswith('/shout'):
+                    text = text[6:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    text = text.upper()
+                    
+                    shoutTxt = '<code>'
+                    for letter in text:
+                        shoutTxt = shoutTxt + letter + ' '
+                    
+                    text = text[1:]
+                    for letter in text:
+                        shoutTxt = shoutTxt + '\n' + letter
+                    shoutTxt = shoutTxt + '</code>'
+                    
+                    try:
+                        reply_html(str(shoutTxt))
+                    except UnicodeEncodeError, err:
+                        reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
+                    except urllib2.HTTPError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
+                elif text.lower() == '/curl':
+                    reply('Usage: /curl <url>')
+                elif text.lower().startswith('/curl'):
+                    text = text[5:]
+                    send_message('Downloading...')
+                    try:
+                        back = urllib2.urlopen(text).read()
+                        reply('`' + str(back) + '`')
+                    except urllib2.HTTPError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: ' + str(err))
+                    except UnicodeDecodeError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: ' + str(err))
+                    except ValueError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: ' + str(err))
+                
                 else:
-                    reply('You are not an admin!')
-            elif text.lower() == '/about':
-                reply('based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
-            elif text.lower() == '/help':
-                helpText = '*Available commands*'
-                helpText = helpText + '\n/start - Enables bot in this chat'
-                helpText = helpText + '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
-                helpText = helpText + '\n/about - Show version info'
-                helpText = helpText + '\n/help - Show this help'
-                helpText = helpText + '\n/getChatId - Show this chat\'s ID'
-                helpText = helpText + '\n/getUserID - Show your UserID'
-                helpText = helpText + '\n/echo <text> - Respond with <text>. Supports markdown'
-                helpText = helpText + '\n/shout <text> - Shout <text> in caps'
-                helpText = helpText + '\n/image - Send a randomly generated image'
-                send_message(helpText)
-            elif text.lower() == '/image':
-                img = Image.new('RGB', (512, 512))
-                base = random.randint(0, 16777216)
-                pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
-                img.putdata(pixels)
-                output = StringIO.StringIO()
-                img.save(output, 'JPEG')
-                reply(img=output.getvalue())
-            elif text.lower() == '/getchatid':
-                reply(str(chat_id))
-            elif text.lower() == '/getuserid':
-                reply(str(fr['id']))
-            elif text.lower() == '/echo':
-                reply('Usage: /echo\t<text>')
-            elif text.lower().startswith('/echo'):
-                send_message(text[5:])
-            elif text.lower() == '/shout':
-                reply('Usage: /shout\t<text>')
-            elif text.lower().startswith('/shout'):
-                text = text[6:]
-                if text.startswith('@WalkmanBot'): text = text[11:]
-                if text.startswith(' '): text = text[1:]
-                text = text.upper()
-                
-                shoutTxt = '<code>'
-                for letter in text:
-                    shoutTxt = shoutTxt + letter + ' '
-                
-                text = text[1:]
-                for letter in text:
-                    shoutTxt = shoutTxt + '\n' + letter
-                shoutTxt = shoutTxt + '</code>'
-                
-                try:
-                    reply_html(str(shoutTxt))
-                except UnicodeEncodeError, err:
-                    reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
-                except urllib2.HTTPError, err:
-                    logging.info('ERROR: ' + str(err))
-                    reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
-            elif text.lower() == '/curl':
-                reply('Usage: /curl <url>')
-            elif text.lower().startswith('/curl'):
-                text = text[5:]
-                send_message('Downloading...')
-                try:
-                    back = urllib2.urlopen(text).read()
-                    reply('`' + str(back) + '`')
-                except urllib2.HTTPError, err:
-                    logging.info('ERROR: ' + str(err))
-                    reply('ERROR: ' + str(err))
-                except UnicodeDecodeError, err:
-                    logging.info('ERROR: ' + str(err))
-                    reply('ERROR: ' + str(err))
-                except ValueError, err:
-                    logging.info('ERROR: ' + str(err))
-                    reply('ERROR: ' + str(err))
-                
+                    if getUnknownCommandEnabled(chat_id):
+                        reply('Unknown command `' + text + '`. Use /help to see existing commands')
+            
+            elif 'what time' in text:
+                reply('look at the corner of your screen!')
             else:
-                if getUnknownCommandEnabled(chat_id):
-                    reply('Unknown command `' + text + '`. Use /help to see existing commands')
-        
-        # elif 'who are you' in text:
-        #     reply('')
-        elif 'what time' in text:
-            reply('look at the corner of your screen!')
-        else:
-            if getEnabled(chat_id):
                 reply('I got your message! (but I do not know how to answer)')
-            else:
-                logging.info('not enabled for chat_id {}'.format(chat_id))
+        else:
+            logging.info('not enabled for chat_id {}'.format(chat_id))
 
 
 app = webapp2.WSGIApplication([
