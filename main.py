@@ -31,6 +31,11 @@ class UnknownCommandStatus(ndb.Model):
     # key name: str(chat_id)
     enabled = ndb.BooleanProperty(indexed=False, default=False)
 
+class MessageList(ndb.Model):
+    # key name: str(chat_id)
+    message = ndb.StringProperty(indexed=False, default="")
+    # TextProperty is "unlimited length" (https://cloud.google.com/appengine/docs/python/ndb/properties#types)
+
 # ================================
 
 def setEnabled(chat_id, yes):
@@ -54,6 +59,17 @@ def getUnknownCommandEnabled(chat_id):
     if es:
         return es.enabled
     return True
+
+def setMessage(chat_id, message):
+    es = MessageList.get_or_insert(str(chat_id))
+    es.message = message
+    es.put()
+
+def getMessage(chat_id):
+    es = MessageList.get_by_id(str(chat_id))
+    if es:
+        return es.message
+    return ""
 
 # ================================
 
@@ -204,12 +220,18 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n/help - Show this help'
                     helpText = helpText + '\n/getChatID - Show this chat\'s ID'
                     helpText = helpText + '\n/getUserID - Show your UserID'
+                    helpText = helpText + '\n/image - Send a "randomly" generated image'
                     helpText = helpText + '\n/echo <text> - Respond with <text>. Supports markdown'
                     helpText = helpText + '\n/shout <text> - Shout <text> in caps'
-                    helpText = helpText + '\n/image - Send a randomly generated image'
-                    helpText = helpText + '\n/curl <url> - Return the text of <url> (Warning: reply could be very long!)'
+                    helpText = helpText + '\n/curl <url> - Return the contents of <url> (Warning: reply could be very long!)'
                     helpText = helpText + '\n/r2a <roman numerals> - Convert Roman Numerals to Arabic numbers'
                     helpText = helpText + '\n/a2r <arabic number> - Convert Arabic numbers to Roman Numerals'
+                    helpText = helpText + '\n\n*Custom Message*'
+                    helpText = helpText + '\n/msg_set <text> - sets the custom message to <text>'
+                    helpText = helpText + '\n/msg_add <text> - adds <text> to the end'
+                    helpText = helpText + '\n/msg_insert <index> <text> - inserts <text> at the specified <index>'
+                    helpText = helpText + '\n/msg_remove <count> - removes <count> characters'
+                    helpText = helpText + '\n/msg [text] - send the custom message with [text] on the end'
                     # helpText = helpText + '\n/'
                     send_message(helpText)
                 elif text.lower() == '/image':
