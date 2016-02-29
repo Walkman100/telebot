@@ -8,10 +8,10 @@ def is_number(s):
 # https://github.com/Walkman100/NumeralConverter/blob/17fe334fb34088fbd7c7c25ef31fba5df8961512/Python27/numeralconverter.py#L68
 def checkAndReturnRomanNumeral(input):
     if is_number(input):
-        if len(input) < 19:
+        if len(input) < 6:
             return(returnRomanNumeral(int(input)))
         else:
-            return("\"" + input + "\" is " + (len(input) - 18 + " digit(s) too long! Maximum size for \"//\" operations is 18 digits"))
+            return("no.")
     else:
         return("\"" + input + "\" is not an Arabic number!")
 

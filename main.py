@@ -227,10 +227,10 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n/r2a <roman numerals> - Convert Roman Numerals to Arabic numbers'
                     helpText = helpText + '\n/a2r <arabic number> - Convert Arabic numbers to Roman Numerals'
                     helpText = helpText + '\n\n*Custom Message*'
-                    helpText = helpText + '\n/msg_set <text> - sets the custom message to <text>'
-                    helpText = helpText + '\n/msg_add <text> - adds <text> to the end'
-                    helpText = helpText + '\n/msg_insert <index> <text> - inserts <text> at the specified <index>'
-                    helpText = helpText + '\n/msg_remove <count> - removes <count> characters'
+                    helpText = helpText + '\n/msgset <text> - sets the custom message to <text>'
+                    helpText = helpText + '\n/msgadd <text> - adds <text> to the end'
+                    helpText = helpText + '\n/msginsert <index> <text> - inserts <text> at the specified <index>'
+                    helpText = helpText + '\n/msgremove <count> - removes <count> characters'
                     helpText = helpText + '\n/msg [text] - send the custom message with [text] on the end'
                     # helpText = helpText + '\n/'
                     send_message(helpText)
@@ -318,7 +318,8 @@ class WebhookHandler(webapp2.RequestHandler):
             elif 'what time' in text:
                 reply('look at the corner of your screen!')
             else:
-                reply('I got your message! (but I do not know how to answer)')
+                pass
+                #reply('I got your message! (but I do not know how to answer)')
         else:
             logging.info('not enabled for chat_id {}'.format(chat_id))
 
