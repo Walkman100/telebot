@@ -318,9 +318,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     except urllib2.HTTPError, err:
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: ' + str(err))
-                else:
-                    if getUnknownCommandEnabled(chat_id):
-                        reply('Unknown command `' + text + '`. Use /help to see existing commands')
+                elif getUnknownCommandEnabled(chat_id):
+                    reply('Unknown command `' + text + '`. Use /help to see existing commands')
             
             elif 'what time' in text:
                 reply('look at the corner of your screen!')
