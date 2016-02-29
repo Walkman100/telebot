@@ -302,15 +302,22 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = text[4:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
-                    reply(numeralconverter.returnArabicNumber(text))
+                    try:
+                        reply(numeralconverter.returnArabicNumber(text))
+                    except urllib2.HTTPError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: ' + str(err))
                 elif text.lower() == '/a2r':
                     reply('Usage: /a2r <arabic number>')
                 elif text.lower().startswith('/a2r'):
                     text = text[4:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
-                    reply(numeralconverter.checkAndReturnRomanNumeral(text))
-                
+                    try:
+                        reply(numeralconverter.checkAndReturnRomanNumeral(text))
+                    except urllib2.HTTPError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: ' + str(err))
                 else:
                     if getUnknownCommandEnabled(chat_id):
                         reply('Unknown command `' + text + '`. Use /help to see existing commands')
