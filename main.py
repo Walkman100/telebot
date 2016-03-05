@@ -230,7 +230,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n`/msgset <text>` - sets the custom message to `text`'
                     helpText = helpText + '\n`/msgadd <text>` - adds `text` to the end'
                     helpText = helpText + '\n`/msginsert <index> <text>` - inserts `text` at the specified `index`'
-                    helpText = helpText + '\n`/msgremove <count>` - removes `count` characters'
+                    helpText = helpText + '\n`/msgremove <count>` - removes `count` characters from the end'
                     helpText = helpText + '\n/msg [text] - send the custom message with `text` on the end'
                     # helpText = helpText + '\n/'
                     send_message(helpText)
@@ -355,6 +355,19 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = getMessage(chat_id)[:index] + text + getMessage(chat_id)[index:]
                     setMessage(chat_id, text)
                     reply('Custom Message set to "' + text + '"')
+                elif text.lower().startswith('/msgremove'):
+                    text = text[10:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    
+                    if numeralconverter.is_number(text):
+                        index = int(text)
+                        text = getMessage(chat_id)
+                        text = text[: len(text) - index]
+                        setMessage(chat_id, text)
+                        reply('Custom Message set to "' + text + '"')
+                    else:
+                        reply('"' + text + '" isn\'t a number!')
                 elif getUnknownCommandEnabled(chat_id):
                     reply('Unknown command `' + text + '`. Use /help to see existing commands')
             
