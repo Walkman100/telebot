@@ -318,6 +318,12 @@ class WebhookHandler(webapp2.RequestHandler):
                     except urllib2.HTTPError, err:
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: ' + str(err))
+                elif text.lower().startswith('/msgset'):
+                    text = text[7:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    setMessage(chat_id, text)
+                    reply('Custom Message set to "' + text + '"')
                 elif getUnknownCommandEnabled(chat_id):
                     reply('Unknown command `' + text + '`. Use /help to see existing commands')
             
