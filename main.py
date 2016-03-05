@@ -331,6 +331,30 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = getMessage(chat_id) + text
                     setMessage(chat_id, text)
                     reply('Custom Message set to "' + text + '"')
+                elif text.lower().startswith('/msginsert'):
+                    text = text[10:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    
+                    indexOfTheIndex = 0
+                    try:
+                        indexOfTheIndex = text.index(' ')
+                    except ValueError, err:
+                        reply('Space seperating index and text not found!')
+                        return
+                    
+                    index = 0
+                    if numeralconverter.is_number(text[:indexOfTheIndex]):
+                        index = int(text[:indexOfTheIndex])
+                        text = text[indexOfTheIndex + 1:]
+                    else:
+                        reply('"' + text[:indexOfTheIndex] + '" isn\'t a number!')
+                        return
+                    
+                    # now we have the index to insert to in `index`, and the text to insert at the index in `text`
+                    text = getMessage(chat_id)[:index] + text + getMessage(chat_id)[index:]
+                    setMessage(chat_id, text)
+                    reply('Custom Message set to "' + text + '"')
                 elif getUnknownCommandEnabled(chat_id):
                     reply('Unknown command `' + text + '`. Use /help to see existing commands')
             
