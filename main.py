@@ -273,7 +273,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     try:
                         reply_html(str(shoutTxt))
                     except UnicodeEncodeError, err:
-                        reply('ERROR: `' + str(err) + '`\n\nIf your message contained single quotation marks (`\'`) that\'s probably the problem.')
+                        reply('ERROR: `' + str(err) + '`\n\nThis error is usually caused by copying and pasting unsupported Unicode characters.')
                     except urllib2.HTTPError, err:
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
@@ -322,6 +322,13 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = text[7:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
+                    setMessage(chat_id, text)
+                    reply('Custom Message set to "' + text + '"')
+                elif text.lower().startswith('/msgadd'):
+                    text = text[7:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    text = getMessage(chat_id) + text
                     setMessage(chat_id, text)
                     reply('Custom Message set to "' + text + '"')
                 elif getUnknownCommandEnabled(chat_id):
