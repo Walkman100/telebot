@@ -226,7 +226,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)'
                     helpText = helpText + '\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers'
                     helpText = helpText + '\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals'
-                    helpText = helpText + '\n\n*Custom Message* (Coming Soon)'
+                    helpText = helpText + '\n\n*Custom Message*'
                     helpText = helpText + '\n`/msgset <text>` - sets the custom message to `text`'
                     helpText = helpText + '\n`/msgadd <text>` - adds `text` to the end'
                     helpText = helpText + '\n`/msginsert <index> <text>` - inserts `text` at the specified `index`'
@@ -368,6 +368,18 @@ class WebhookHandler(webapp2.RequestHandler):
                         reply('Custom Message set to "' + text + '"')
                     else:
                         reply('"' + text + '" isn\'t a number!')
+                elif text.lower().startswith('/msg'):
+                    text = text[4:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    if text == '':
+                        text = getMessage(chat_id)
+                    else:
+                        text = getMessage(chat_id) + ' ' + text
+                    if text == '':
+                        reply('Custom message hasn\'t been set, use `/msgset` to set it')
+                    else:
+                        reply(text)
                 elif getUnknownCommandEnabled(chat_id):
                     reply('Unknown command `' + text + '`. Use /help to see existing commands')
             
