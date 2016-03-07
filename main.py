@@ -254,6 +254,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
                     send_message(text)
+                elif text.lower() == '/uecho':
+                    reply('Usage: /uecho <unicode sequence>')
                 elif text.lower().startswith('/uecho'):
                     text = text[6:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
@@ -262,7 +264,9 @@ class WebhookHandler(webapp2.RequestHandler):
                         send_message(text.decode('unicode-escape'))
                     except UnicodeEncodeError, err:
                         logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err) + '\n\nDon\'t use unicode!')
+                        reply('ERROR: ' + str(err) + '\n\nDon\'t use unicode! (But this message can be used to find the sequence of unicode characters)')
+                    except UnicodeDecodeError, err:
+                        reply('"' + text + '" contains an invalid unicode character sequence!')
                 elif text.lower() == '/shout':
                     reply('Usage: /shout <text>')
                 elif text.lower().startswith('/shout'):
