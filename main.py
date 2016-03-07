@@ -221,7 +221,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n/getChatID - Show this chat\'s ID'
                     helpText = helpText + '\n/getUserID - Show your UserID'
                     helpText = helpText + '\n/image - Send a "randomly" generated image'
-                    helpText = helpText + '\n`/echo <text>` - Respond with `text`. Supports markdown'
+                    helpText = helpText + '\n`/echo <text>` - Respond with `text`, supports markdown'
+                    helpText = helpText + '\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211'
                     helpText = helpText + '\n`/shout <text>` - Shout `text` in caps'
                     helpText = helpText + '\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)'
                     helpText = helpText + '\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers'
@@ -253,6 +254,15 @@ class WebhookHandler(webapp2.RequestHandler):
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
                     send_message(text)
+                elif text.lower().startswith('/uecho'):
+                    text = text[6:]
+                    if text.startswith('@WalkmanBot'): text = text[11:]
+                    if text.startswith(' '): text = text[1:]
+                    try:
+                        send_message(text.decode('unicode-escape'))
+                    except UnicodeEncodeError, err:
+                        logging.info('ERROR: ' + str(err))
+                        reply('ERROR: ' + str(err) + '\n\nDon\'t use unicode!')
                 elif text.lower() == '/shout':
                     reply('Usage: /shout <text>')
                 elif text.lower().startswith('/shout'):
