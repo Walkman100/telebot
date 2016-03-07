@@ -260,6 +260,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = text[6:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
+                    if text.count('\\') == 0: text = '\\' + text
                     try:
                         send_message(text.decode('unicode-escape'))
                     except UnicodeEncodeError, err:

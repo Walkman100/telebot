@@ -1,0 +1,1 @@
+@python2 -u %ProgramFiles%\Google\AppEngine\appcfg.py --oauth2_credential_file=%UserProfile%\.appcfg_oauth2_tokens update %~dp0
