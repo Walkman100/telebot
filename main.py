@@ -280,7 +280,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
                     text = text.upper()
-                    text = text[:29] # truncate text so message can't be ridiculously long
+                    text = text[:20] # truncate text so message can't be ridiculously long
                     
                     shoutTxt = '<code>'
                     for letter in text:
