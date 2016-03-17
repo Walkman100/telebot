@@ -284,11 +284,13 @@ class WebhookHandler(webapp2.RequestHandler):
                     
                     shoutTxt = '<code>'
                     for letter in text:
-                        shoutTxt = shoutTxt + letter + ' '
+                        shoutTxt += letter + ' '
                     
                     text = text[1:]
+                    seperator = ' '
                     for letter in text:
-                        shoutTxt = shoutTxt + '\n' + letter
+                        shoutTxt += '\n' + letter + seperator + letter
+                        seperator += '  ' # 3D-ness
                     shoutTxt = shoutTxt + '</code>'
                     
                     try:
