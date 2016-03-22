@@ -216,25 +216,25 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply('based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))')
                 elif text.lower() == '/help':
                     helpText = '*Available commands*'
-                    helpText = helpText + '\n/start - Enables bot in this chat'
-                    helpText = helpText + '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
-                    helpText = helpText + '\n/about - Show version info'
-                    helpText = helpText + '\n/help - Show this help'
-                    helpText = helpText + '\n/whoAmI - Get ID\'s and info about the user'
-                    helpText = helpText + '\n/image - Send a "randomly" generated image'
-                    helpText = helpText + '\n`/echo <text>` - Respond with `text`, supports markdown'
-                    helpText = helpText + '\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211'
-                    helpText = helpText + '\n`/shout <text>` - Shout `text` in caps'
-                    helpText = helpText + '\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)'
-                    helpText = helpText + '\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers'
-                    helpText = helpText + '\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals'
-                    helpText = helpText + '\n\n*Custom Message*'
-                    helpText = helpText + '\n`/msgset <text>` - sets the custom message to `text`'
-                    helpText = helpText + '\n`/msgadd <text>` - adds `text` to the end'
-                    helpText = helpText + '\n`/msginsert <index> <text>` - inserts `text` at the specified `index`'
-                    helpText = helpText + '\n`/msgremove <count>` - removes `count` characters from the end'
-                    helpText = helpText + '\n/msg [text] - send the custom message with `text` on the end'
-                    # helpText = helpText + '\n/'
+                    helpText += '\n/start - Enables bot in this chat'
+                    helpText += '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
+                    helpText += '\n/about - Show version info'
+                    helpText += '\n/help - Show this help'
+                    helpText += '\n/whoAmI - Get ID\'s and info about the user'
+                    helpText += '\n/image - Send a "randomly" generated image'
+                    helpText += '\n`/echo <text>` - Respond with `text`, supports markdown'
+                    helpText += '\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211'
+                    helpText += '\n`/shout <text>` - Shout `text` in caps'
+                    helpText += '\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)'
+                    helpText += '\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers'
+                    helpText += '\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals'
+                    helpText += '\n\n*Custom Message*'
+                    helpText += '\n`/msgset <text>` - sets the custom message to `text`'
+                    helpText += '\n`/msgadd <text>` - adds `text` to the end'
+                    helpText += '\n`/msginsert <index> <text>` - inserts `text` at the specified `index`'
+                    helpText += '\n`/msgremove <count>` - removes `count` characters from the end'
+                    helpText += '\n/msg [text] - send the custom message with `text` on the end'
+                    # helpText += '\n/'
                     send_message(helpText)
                 elif text.lower() == '/image':
                     img = Image.new('RGB', (512, 512))
@@ -286,7 +286,6 @@ class WebhookHandler(webapp2.RequestHandler):
                     try:
                         send_message(text.decode('unicode-escape'))
                     except UnicodeEncodeError, err:
-                        logging.info('ERROR: ' + str(err))
                         reply('ERROR: `' + str(err) + '`\n\nDon\'t use unicode! (But this message can be used to find the sequence of unicode characters)')
                     except UnicodeDecodeError, err:
                         reply('`' + text + '` contains an invalid unicode character sequence!')
@@ -313,9 +312,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     shoutTxt = shoutTxt + '</code>'
                     
                     try:
-                        reply_html(str(shoutTxt))
-                    except UnicodeEncodeError, err:
-                        reply('ERROR: `' + str(err) + '`\n\nThis error is caused by using Unicode characters.')
+                        reply_html(shoutTxt)
                     except urllib2.HTTPError, err:
                         reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
                 elif text.lower() == '/curl':
