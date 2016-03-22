@@ -287,12 +287,11 @@ class WebhookHandler(webapp2.RequestHandler):
                         send_message(text.decode('unicode-escape'))
                     except UnicodeEncodeError, err:
                         logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err) + '\n\nDon\'t use unicode! (But this message can be used to find the sequence of unicode characters)')
+                        reply('ERROR: `' + str(err) + '`\n\nDon\'t use unicode! (But this message can be used to find the sequence of unicode characters)')
                     except UnicodeDecodeError, err:
-                        reply('"' + text + '" contains an invalid unicode character sequence!')
+                        reply('`' + text + '` contains an invalid unicode character sequence!')
                     except urllib2.HTTPError, err:
-                        logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`')
                 elif text.lower() == '/shout':
                     reply('Usage: `/shout <text>`')
                 elif text.lower().startswith('/shout'):
@@ -318,7 +317,6 @@ class WebhookHandler(webapp2.RequestHandler):
                     except UnicodeEncodeError, err:
                         reply('ERROR: `' + str(err) + '`\n\nThis error is caused by using Unicode characters.')
                     except urllib2.HTTPError, err:
-                        logging.info('ERROR: ' + str(err))
                         reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
                 elif text.lower() == '/curl':
                     reply('Usage: `/curl <url>`')
@@ -331,14 +329,11 @@ class WebhookHandler(webapp2.RequestHandler):
                         back = urllib2.urlopen(text).read()
                         reply('`' + str(back) + '`')
                     except urllib2.HTTPError, err:
-                        logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`')
                     except UnicodeDecodeError, err:
-                        logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`')
                     except ValueError, err:
-                        logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`')
                 elif text.lower() == '/r2a':
                     reply('Usage: `/r2a <roman numerals>`')
                 elif text.lower().startswith('/r2a'):
@@ -348,8 +343,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     try:
                         reply(numeralconverter.returnArabicNumber(text))
                     except urllib2.HTTPError, err:
-                        logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`')
                 elif text.lower() == '/a2r':
                     reply('Usage: `/a2r <arabic number>`')
                 elif text.lower().startswith('/a2r'):
@@ -359,8 +353,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     try:
                         reply(numeralconverter.checkAndReturnRomanNumeral(text))
                     except urllib2.HTTPError, err:
-                        logging.info('ERROR: ' + str(err))
-                        reply('ERROR: ' + str(err))
+                        reply('ERROR: `' + str(err) + '`')
                 elif text.lower().startswith('/msgset'):
                     text = text[7:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
