@@ -245,14 +245,14 @@ class WebhookHandler(webapp2.RequestHandler):
                     img.save(output, 'JPEG')
                     reply(img=output.getvalue())
                 elif text.lower() == '/whoami':
-                    replystring = 'You are `'
+                    replystring = 'You are <code>'
                     try:
-                        replystring += fr['first_name'] + '` '
+                        replystring += fr['first_name'] + '</code> '
                     except KeyError, err:
                         pass
                     
                     try:
-                        replystring += '(first) `' + fr['last_name'] + '` (last) '
+                        replystring += '(first) <code>' + fr['last_name'] + '</code> (last) '
                     except KeyError, err:
                         pass
                     
@@ -261,23 +261,17 @@ class WebhookHandler(webapp2.RequestHandler):
                     except KeyError, err:
                         pass
                     
-                    replystring += 'with an ID of `' + str(fr['id']) + '`, chatting in a ' + chat['type']
+                    replystring += 'with an ID of <code>' + str(fr['id']) + '</code>, chatting in a ' + chat['type']
                     try:
-                        replystring += ' chat called `' + chat['title'] + '` '
+                        replystring += ' chat called <code>' + chat['title'] + '</code> '
                     except KeyError, err:
                         replystring += ' chat '
                     
-                    replystring += 'with ID `' + str(chat_id) + '`.'
+                    replystring += 'with ID <code>' + str(chat_id) + '</code>.'
                     try:
-                        reply(replystring)
+                        reply_html(replystring)
                     except urllib2.HTTPError, err:
-                        try:
-                            reply_html(replystring + ' (2)')
-                        except urllib2.HTTPError, err2:
-                            try:
-                                reply(replystring.encode('unicode-escape') + ' (3)')
-                            except urllib2.HTTPError, err3:
-                                reply('ERROR: ' + str(err) + '\n' + str(err2) + '\n' + str(err3) + '\n\nPlease try again.')
+                        reply('HTTPError: ' + str(err))
                     
                 elif text.lower() == '/echo':
                     reply('Usage: `/echo <text>`')
