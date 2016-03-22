@@ -245,14 +245,14 @@ class WebhookHandler(webapp2.RequestHandler):
                     img.save(output, 'JPEG')
                     reply(img=output.getvalue())
                 elif text.lower() == '/whoami':
-                    replystring = 'You are '
+                    replystring = 'You are `'
                     try:
-                        replystring += fr['first_name'] + ' '
+                        replystring += fr['first_name'] + '` '
                     except KeyError, err:
                         pass
                     
                     try:
-                        replystring += '(first) ' + fr['last_name'] + ' (last) '
+                        replystring += '(first) `' + fr['last_name'] + '` (last) '
                     except KeyError, err:
                         pass
                     
@@ -261,14 +261,24 @@ class WebhookHandler(webapp2.RequestHandler):
                     except KeyError, err:
                         pass
                     
-                    replystring += 'with an ID of ' + str(fr['id']) + ', chatting in a ' + chat['type']
+                    replystring += 'with an ID of `' + str(fr['id']) + '`, chatting in a ' + chat['type']
                     try:
-                        replystring += ' chat called ' + chat['title'] + ' '
+                        replystring += ' chat called `' + chat['title'] + '` '
                     except KeyError, err:
                         replystring += ' chat '
                     
-                    replystring += 'with ID ' + str(chat_id) + '.'
-                    reply(replystring)
+                    replystring += 'with ID `' + str(chat_id) + '`.'
+                    try:
+                        reply(replystring)
+                    except urllib2.HTTPError, err:
+                        try:
+                            reply_html(replystring + ' (2)')
+                        except urllib2.HTTPError, err2:
+                            try:
+                                reply(replystring.encode('unicode-escape') + ' (3)')
+                            except urllib2.HTTPError, err3:
+                                reply('ERROR: ' + str(err) + '\n' + str(err2) + '\n' + str(err3) + '\n\nPlease try again.')
+                    
                 elif text.lower() == '/echo':
                     reply('Usage: `/echo <text>`')
                 elif text.lower().startswith('/echo'):
@@ -322,15 +332,15 @@ class WebhookHandler(webapp2.RequestHandler):
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
                     send_message('Downloading...')
+                    back = urllib2.urlopen(text).read()
                     try:
-                        back = urllib2.urlopen(text).read()
-                        reply('`' + str(back) + '`')
+                        reply('`' + back + '`')
                     except urllib2.HTTPError, err:
-                        reply('ERROR: `' + str(err) + '`')
-                    except UnicodeDecodeError, err:
-                        reply('ERROR: `' + str(err) + '`')
+                        reply('HTTPError: `' + str(err) + '`')
                     except ValueError, err:
-                        reply('ERROR: `' + str(err) + '`')
+                        reply('ValueError: `' + str(err) + '`')
+                    except UnicodeDecodeError, err:
+                        reply('UnicodeDecodeError: `' + str(err) + '`')
                 elif text.lower() == '/r2a':
                     reply('Usage: `/r2a <roman numerals>`')
                 elif text.lower().startswith('/r2a'):
