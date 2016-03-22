@@ -250,14 +250,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 elif text.lower() == '/getuserid':
                     reply(str(fr['id']))
                 elif text.lower() == '/echo':
-                    reply('Usage: /echo <text>')
+                    reply('Usage: `/echo <text>`')
                 elif text.lower().startswith('/echo'):
                     text = text[5:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
                     if text.startswith(' '): text = text[1:]
                     send_message(text)
                 elif text.lower() == '/uecho':
-                    reply('Usage: /uecho <unicode sequence>')
+                    reply('Usage: `/uecho <unicode sequence>`')
                 elif text.lower().startswith('/uecho'):
                     text = text[6:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
@@ -274,7 +274,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: ' + str(err))
                 elif text.lower() == '/shout':
-                    reply('Usage: /shout <text>')
+                    reply('Usage: `/shout <text>`')
                 elif text.lower().startswith('/shout'):
                     text = text[6:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
@@ -296,12 +296,12 @@ class WebhookHandler(webapp2.RequestHandler):
                     try:
                         reply_html(str(shoutTxt))
                     except UnicodeEncodeError, err:
-                        reply('ERROR: `' + str(err) + '`\n\nThis error is usually caused by copying and pasting unsupported Unicode characters.')
+                        reply('ERROR: `' + str(err) + '`\n\nThis error is caused by using Unicode characters.')
                     except urllib2.HTTPError, err:
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: `' + str(err) + '`\n\nSorry no <tags> ' + u'\U0001f61e')
                 elif text.lower() == '/curl':
-                    reply('Usage: /curl <url>')
+                    reply('Usage: `/curl <url>`')
                 elif text.lower().startswith('/curl'):
                     text = text[5:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
@@ -320,7 +320,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: ' + str(err))
                 elif text.lower() == '/r2a':
-                    reply('Usage: /r2a <roman numerals>')
+                    reply('Usage: `/r2a <roman numerals>`')
                 elif text.lower().startswith('/r2a'):
                     text = text[4:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
@@ -331,7 +331,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         logging.info('ERROR: ' + str(err))
                         reply('ERROR: ' + str(err))
                 elif text.lower() == '/a2r':
-                    reply('Usage: /a2r <arabic number>')
+                    reply('Usage: `/a2r <arabic number>`')
                 elif text.lower().startswith('/a2r'):
                     text = text[4:]
                     if text.startswith('@WalkmanBot'): text = text[11:]
@@ -400,7 +400,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     else:
                         text = getMessage(chat_id) + ' ' + text
                     if text == '':
-                        reply('Custom message hasn\'t been set, use `/msgset` to set it')
+                        reply('Custom message hasn\'t been set, use `/msgset <text>` to set it')
                     else:
                         reply(text)
                 elif getUnknownCommandEnabled(chat_id):
