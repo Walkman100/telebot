@@ -220,8 +220,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     helpText = helpText + '\n/stop - Disables bot responses in this chat: bot won\'t respond to anything except /start'
                     helpText = helpText + '\n/about - Show version info'
                     helpText = helpText + '\n/help - Show this help'
-                    helpText = helpText + '\n/getChatID - Show this chat\'s ID'
-                    helpText = helpText + '\n/getUserID - Show your UserID'
+                    helpText = helpText + '\n/whoAmI - Get ID\'s and info about the user'
                     helpText = helpText + '\n/image - Send a "randomly" generated image'
                     helpText = helpText + '\n`/echo <text>` - Respond with `text`, supports markdown'
                     helpText = helpText + '\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211'
@@ -245,10 +244,31 @@ class WebhookHandler(webapp2.RequestHandler):
                     output = StringIO.StringIO()
                     img.save(output, 'JPEG')
                     reply(img=output.getvalue())
-                elif text.lower() == '/getchatid':
-                    reply(str(chat_id))
-                elif text.lower() == '/getuserid':
-                    reply(str(fr['id']))
+                elif text.lower() == '/whoami':
+                    replystring = 'You are '
+                    try:
+                        replystring += fr['first_name'] + ' '
+                    except KeyError, err:
+                        pass
+                    
+                    try:
+                        replystring += '(first) ' + fr['last_name'] + ' (last) '
+                    except KeyError, err:
+                        pass
+                    
+                    try:
+                        replystring += '(@' + fr['username'] + ') '
+                    except KeyError, err:
+                        pass
+                    
+                    replystring += 'with an ID of ' + str(fr['id']) + ', chatting in a ' + chat['type']
+                    try:
+                        replystring += ' chat called ' + chat['title'] + ' '
+                    except KeyError, err:
+                        replystring += ' chat '
+                    
+                    replystring += 'with ID ' + str(chat_id) + '.'
+                    reply(replystring)
                 elif text.lower() == '/echo':
                     reply('Usage: `/echo <text>`')
                 elif text.lower().startswith('/echo'):
