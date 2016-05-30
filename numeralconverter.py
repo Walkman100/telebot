@@ -63,19 +63,19 @@ def returnRomanNumeral(number):
     while number >= 1:
         number -= 1
         returnString = returnString + "I"
-    return('`' + returnString + '`')
+    return("`" + returnString + "`")
 
 def returnArabicNumber(RomanNumber):
     RomanNumber = RomanNumber.upper()
     for i in range(0, len(RomanNumber)):
         # https://stackoverflow.com/a/1228327/2999220
-        if RomanNumber[i] == "I":   RomanNumber = RomanNumber[:i] + '1' + RomanNumber[i + 1:]
-        elif RomanNumber[i] == "V": RomanNumber = RomanNumber[:i] + '2' + RomanNumber[i + 1:]
-        elif RomanNumber[i] == "X": RomanNumber = RomanNumber[:i] + '3' + RomanNumber[i + 1:]
-        elif RomanNumber[i] == "L": RomanNumber = RomanNumber[:i] + '4' + RomanNumber[i + 1:]
-        elif RomanNumber[i] == "C": RomanNumber = RomanNumber[:i] + '5' + RomanNumber[i + 1:]
-        elif RomanNumber[i] == "D": RomanNumber = RomanNumber[:i] + '6' + RomanNumber[i + 1:]
-        elif RomanNumber[i] == "M": RomanNumber = RomanNumber[:i] + '7' + RomanNumber[i + 1:]
+        if RomanNumber[i] == "I":   RomanNumber = RomanNumber[:i] + "1" + RomanNumber[i + 1:]
+        elif RomanNumber[i] == "V": RomanNumber = RomanNumber[:i] + "2" + RomanNumber[i + 1:]
+        elif RomanNumber[i] == "X": RomanNumber = RomanNumber[:i] + "3" + RomanNumber[i + 1:]
+        elif RomanNumber[i] == "L": RomanNumber = RomanNumber[:i] + "4" + RomanNumber[i + 1:]
+        elif RomanNumber[i] == "C": RomanNumber = RomanNumber[:i] + "5" + RomanNumber[i + 1:]
+        elif RomanNumber[i] == "D": RomanNumber = RomanNumber[:i] + "6" + RomanNumber[i + 1:]
+        elif RomanNumber[i] == "M": RomanNumber = RomanNumber[:i] + "7" + RomanNumber[i + 1:]
         else:
             return("\"" + RomanNumber[i] + "\" is not a valid Roman Numeral character!")
     # Now we have the roman number in arabic numbers (so we can use < and >), we just add it all
@@ -98,4 +98,4 @@ def returnArabicNumber(RomanNumber):
             elif RomanNumber[i] == "5": ArabicNumber -= 100
             elif RomanNumber[i] == "6": ArabicNumber -= 500
             elif RomanNumber[i] == "7": ArabicNumber -= 1000
-    return('`' + str(ArabicNumber) + '`')
+    return("`" + str(ArabicNumber) + "`")
