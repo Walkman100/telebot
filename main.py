@@ -194,6 +194,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("You are not an admin!")
             elif text.lower() == "/about":
                 reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
+            elif text.lower() == "/info":
+                reply("Quick Command info: on Desktop, use the arrow keys to highlight the command you want and Tab to insert. On mobile, scroll to the command you want and tap-and-hold to insert.")
             elif text.lower() == "/help":
                 helpText = "*Available commands*"
                 helpText += "\n/about - Show version info"
@@ -250,7 +252,6 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply_html(replystring)
                 except urllib2.HTTPError, err:
                     reply("HTTPError: " + str(err))
-                
             elif text.lower() == "/echo":
                 reply("Usage: `/echo <text>`")
             elif text.lower().startswith("/echo"):
@@ -304,8 +305,8 @@ class WebhookHandler(webapp2.RequestHandler):
                 if text.startswith("@WalkmanBot"): text = text[11:]
                 if text.startswith(" "): text = text[1:]
                 send_message("Downloading...")
-                back = urllib2.urlopen(text).read()
                 try:
+                    back = urllib2.urlopen(text).read()
                     reply("`" + back + "`")
                 except urllib2.HTTPError, err:
                     reply("HTTPError: `" + str(err) + "`")
