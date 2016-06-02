@@ -195,7 +195,12 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text.lower() == "/about":
                 reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
             elif text.lower() == "/info":
-                reply("Quick Command info: on Desktop, use the arrow keys to highlight the command you want and Tab to insert. On mobile, scroll to the command you want and tap-and-hold to insert.")
+                infoText = "*Telegram Command input info:* After typing `/`:"
+                infoText += "\nDesktop:\n- Use the arrow keys or your mouse to highlight a command"
+                infoText += "\n- Use Tab to insert it into the input box"
+                infoText += "\nMobile:\n- Scroll to a command"
+                infoText += "\n- Tap-and-hold on it to insert it into the input box"
+                reply(infoText)
             elif text.lower() == "/help":
                 helpText = "*Available commands*"
                 helpText += "\n/about - Show version info"
@@ -213,7 +218,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n`/msgadd <text>` - adds `text` to the end"
                 helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
                 helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
-                helpText += "\n/msg [text] - send the custom message with `text` on the end"
+                helpText += "\n/msg <text> - send the custom message with `text` on the end"
                 # helpText += "\n/"
                 send_message(helpText)
             elif text.lower() == "/image":
