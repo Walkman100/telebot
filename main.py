@@ -197,7 +197,7 @@ class WebhookHandler(webapp2.RequestHandler):
             elif text.lower() == "/info":
                 infoText = "*Telegram Command input info:* After typing `/`:"
                 infoText += "\nDesktop:\n- Use the arrow keys or your mouse to highlight a command"
-                infoText += "\n- Use Tab to insert it into the input box"
+                infoText += "\n- Use `Tab` to insert it into the input box"
                 infoText += "\nMobile:\n- Scroll to a command"
                 infoText += "\n- Tap-and-hold on it to insert it into the input box"
                 reply(infoText)

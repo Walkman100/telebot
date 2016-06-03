@@ -1,7 +1,11 @@
 def is_number(s):
     try:
         float(s)
-        return True
+        try:
+            test = int(s)
+            return True
+        except ValueError:
+            return False
     except ValueError:
         return False
 
