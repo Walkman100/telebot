@@ -178,7 +178,7 @@ class WebhookHandler(webapp2.RequestHandler):
         
         # COMMANDS BELOW
         
-        if text.endswith("@WalkmanBot"): text = text[:-11]
+        if text.lower().endswith("@walkmanbot"): text = text[:-11]
         if text.startswith("/"):
             if text.lower() == "/start":
                 reply("Use /help for commands")
@@ -196,9 +196,9 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
             elif text.lower() == "/info":
                 infoText = "*Telegram Command input info:* After typing `/`:"
-                infoText += "\nDesktop:\n- Use the arrow keys or your mouse to highlight a command"
+                infoText += "\nDesktop (Windows, Linux & Mac QT Client):\n- Use the arrow keys or your mouse to highlight a command"
                 infoText += "\n- Use `Tab` to insert it into the input box"
-                infoText += "\nMobile:\n- Scroll to a command"
+                infoText += "\nMobile (Official Android Client & forks):\n- Scroll to a command"
                 infoText += "\n- Tap-and-hold on it to insert it into the input box"
                 reply(infoText)
             elif text.lower() == "/help":
