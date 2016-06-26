@@ -179,6 +179,7 @@ class WebhookHandler(webapp2.RequestHandler):
         # COMMANDS BELOW
         
         if text.lower().endswith("@walkmanbot"): text = text[:-11]
+        if text.endswith(" "): text = text[:-1]
         if text.startswith("/"):
             if text.lower() == "/start":
                 reply("Use /help for commands")
