@@ -181,6 +181,12 @@ class WebhookHandler(webapp2.RequestHandler):
         if text.endswith(" "): text = text[:-1]
         if text.startswith("/"): text = text[1:]
 
+        def CleanText(command, text):  # Gah stupid python not allowing
+            text = text[len(command):] # access to outer variables
+            if text.startswith("@WalkmanBot"): text = text[11:]
+            if text.startswith(" "): text = text[1:]
+            return text # Gah stupid python not having ByRef
+
         # COMMANDS BELOW
         if text.lower() == "start":
             reply("Use /help for commands")
@@ -262,16 +268,12 @@ class WebhookHandler(webapp2.RequestHandler):
         elif text.lower() == "echo":
             reply("Usage: `/echo <text>`")
         elif text.lower().startswith("echo"):
-            text = text[4:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("echo", text)
             send_message(text)
         elif text.lower() == "uecho":
             reply("Usage: `/uecho <unicode sequence>`")
         elif text.lower().startswith("uecho"):
-            text = text[5:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("uecho", text)
             if text.count("\\") == 0: text = "\\" + text
             try:
                 send_message(text.decode("unicode-escape"))
@@ -284,9 +286,7 @@ class WebhookHandler(webapp2.RequestHandler):
         elif text.lower() == "shout":
             reply("Usage: `/shout <text>`")
         elif text.lower().startswith("shout"):
-            text = text[5:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("shout", text)
             text = text.upper()
             text = text[:20] # truncate text so message can't be ridiculously long
 
@@ -308,9 +308,7 @@ class WebhookHandler(webapp2.RequestHandler):
         elif text.lower() == "curl":
             reply("Usage: `/curl <url>`")
         elif text.lower().startswith("curl"):
-            text = text[4:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("curl", text)
             send_message("Downloading...")
             try:
                 back = urllib2.urlopen(text).read()
@@ -324,9 +322,7 @@ class WebhookHandler(webapp2.RequestHandler):
         elif text.lower() == "r2a":
             reply("Usage: `/r2a <roman numerals>`")
         elif text.lower().startswith("r2a"):
-            text = text[3:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("r2a", text)
             try:
                 reply(numeralconverter.returnArabicNumber(text))
             except urllib2.HTTPError, err:
@@ -334,30 +330,22 @@ class WebhookHandler(webapp2.RequestHandler):
         elif text.lower() == "a2r":
             reply("Usage: `/a2r <arabic number>`")
         elif text.lower().startswith("a2r"):
-            text = text[3:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("a2r", text)
             try:
                 reply(numeralconverter.checkAndReturnRomanNumeral(text))
             except urllib2.HTTPError, err:
                 reply("ERROR: `" + str(err) + "`")
         elif text.lower().startswith("msgset"):
-            text = text[6:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("msgset", text)
             setMessage(chat_id, text)
             reply("Custom Message set to `" + text + "`")
         elif text.lower().startswith("msgadd"):
-            text = text[6:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("msgadd", text)
             text = getMessage(chat_id) + text
             setMessage(chat_id, text)
             reply("Custom Message set to `" + text + "`")
         elif text.lower().startswith("msginsert"):
-            text = text[9:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("msginsert", text)
             
             indexOfTheIndex = 0
             try:
@@ -379,9 +367,7 @@ class WebhookHandler(webapp2.RequestHandler):
             setMessage(chat_id, text)
             reply("Custom Message set to `" + text + "`")
         elif text.lower().startswith("msgremove"):
-            text = text[9:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("msgremove", text)
             
             if numeralconverter.is_number(text):
                 index = int(text)
@@ -392,9 +378,7 @@ class WebhookHandler(webapp2.RequestHandler):
             else:
                 reply("'" + text + "' isn't a number!")
         elif text.lower().startswith("msg"):
-            text = text[3:]
-            if text.startswith("@WalkmanBot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
+            text = CleanText("msg", text)
             if text == "":
                 text = getMessage(chat_id)
             else:
