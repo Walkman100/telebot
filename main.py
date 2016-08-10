@@ -127,8 +127,7 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info("send response: " + str(resp))
         
-        def reply_html(msg=None, img=None):
-            # exactly the same as reply() but parse it as html
+        def reply_html(msg=None, img=None): # exactly the same as reply() but parse it as html
             if msg:
                 resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                     "chat_id": str(chat_id),
@@ -149,8 +148,7 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info("send response: " + str(resp))
         
-        def send_message(msg=None, img=None):
-            # exactly the same as reply() but no reply_to_message_id parameter
+        def send_message(msg=None, img=None): # exactly the same as reply() but no reply_to_message_id parameter
             if msg:
                 resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                     "chat_id": str(chat_id),
@@ -170,6 +168,14 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info("send response: " + str(resp))
         
+        def send_chat_action(action): # https://core.telegram.org/bots/api#sendchataction
+            resp = urllib2.urlopen(BASE_URL + "sendChatAction", urllib.urlencode({
+                "chat_id": str(chat_id),
+                "action": str(action),
+            })).read()
+
+            logging.info("send response: " + str(resp))
+
         admins = [61311478, 83416231]
         def isSudo():
             if fr["id"] in admins:
@@ -179,11 +185,11 @@ class WebhookHandler(webapp2.RequestHandler):
         # Clean up text variable
         if text.lower().endswith("@walkmanbot"): text = text[:-11]
         if text.endswith(" "): text = text[:-1]
-        if text.startswith("/"): text = text[1:]
+        if text.startswith("/") or text.startswith("#") or text.startswith("!"): text = text[1:]
 
         def CleanText(command, text):  # Gah stupid python not allowing
             text = text[len(command):] # access to outer variables
-            if text.startswith("@WalkmanBot"): text = text[11:]
+            if text.lower().startswith("@walkmanbot"): text = text[11:]
             if text.startswith(" "): text = text[1:]
             return text # Gah stupid python not having ByRef
 
@@ -230,6 +236,7 @@ class WebhookHandler(webapp2.RequestHandler):
             # helpText += "\n/"
             send_message(helpText)
         elif text.lower() == "image":
+            send_chat_action("upload_photo")
             img = Image.new("RGB", (512, 512))
             base = random.randint(0, 16777216)
             pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
@@ -309,7 +316,7 @@ class WebhookHandler(webapp2.RequestHandler):
             reply("Usage: `/curl <url>`")
         elif text.lower().startswith("curl"):
             text = CleanText("curl", text)
-            send_message("Downloading...")
+            send_chat_action("upload_document")
             try:
                 back = urllib2.urlopen(text).read()
                 reply("`" + back + "`")
