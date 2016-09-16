@@ -220,8 +220,9 @@ class WebhookHandler(webapp2.RequestHandler):
             helpText += "\n/about - Show version info"
             helpText += "\n/help - Show this help"
             helpText += "\n/whoAmI - Get ID's and info about the user"
-            helpText += "\n/image - Send a \"randomly\" generated image"
+            helpText += "\n/image - Send a 'randomly' generated image"
             helpText += "\n`/echo <text>` - Respond with `text`, supports markdown"
+            helpText += "\n`/recho <text>` - Respond with `text` reversed"
             helpText += "\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211"
             helpText += "\n`/shout <text>` - Shout `text` in caps"
             helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
@@ -290,6 +291,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply("`" + text + "` contains an invalid unicode character sequence!")
             except urllib2.HTTPError, err:
                 reply("ERROR: `" + str(err) + "`")
+        elif text.lower() == "recho":
+            reply("Usage: `/recho <text>`")
+        elif text.lower().startswith("recho"):
+            text = CleanText("recho", text)
+            revTxt = ""
+            for letter in text:
+                revTxt = letter + revTxt
+            send_message(revTxt)
         elif text.lower() == "shout":
             reply("Usage: `/shout <text>`")
         elif text.lower().startswith("shout"):
