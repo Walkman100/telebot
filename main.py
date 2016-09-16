@@ -273,11 +273,6 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply_html(replystring)
             except urllib2.HTTPError, err:
                 reply("HTTPError: " + str(err))
-        elif text.lower() == "echo":
-            reply("Usage: `/echo <text>`")
-        elif text.lower().startswith("echo"):
-            text = CleanText("echo", text)
-            send_message(text)
         elif text.lower() == "uecho":
             reply("Usage: `/uecho <unicode sequence>`")
         elif text.lower().startswith("uecho"):
@@ -291,16 +286,17 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply("`" + text + "` contains an invalid unicode character sequence!")
             except urllib2.HTTPError, err:
                 reply("ERROR: `" + str(err) + "`")
-        elif text.lower() == "recho":
-            reply("Usage: `/recho <text>`")
+        elif text.lower() in ["echo", "recho", "shout"]:
+            reply("Usage: `/" + text.lower() + " <text>`")
+        elif text.lower().startswith("echo"):
+            text = CleanText("echo", text)
+            send_message(text)
         elif text.lower().startswith("recho"):
             text = CleanText("recho", text)
             revTxt = ""
             for letter in text:
                 revTxt = letter + revTxt
             send_message(revTxt)
-        elif text.lower() == "shout":
-            reply("Usage: `/shout <text>`")
         elif text.lower().startswith("shout"):
             text = CleanText("shout", text)
             text = text.upper()
