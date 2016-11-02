@@ -331,6 +331,8 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply("ValueError: `" + str(err) + "`")
             except UnicodeDecodeError, err:
                 reply("UnicodeDecodeError: `" + str(err) + "`")
+            except:
+                reply("Couldn't resolve `" + text + "`!")
         elif text.lower() == "r2a":
             reply("Usage: `/r2a <roman numerals>`")
         elif text.lower().startswith("r2a"):
