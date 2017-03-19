@@ -91,7 +91,10 @@ class WebhookHandler(webapp2.RequestHandler):
         try:
             message = body["message"]
         except:
-            message = body["edited_message"]
+            try:
+                message = body["edited_message"]
+            except: # empty edits
+                return
         message_id = message.get("message_id")
         date = message.get("date")
         text = message.get("text")
@@ -365,7 +368,7 @@ class WebhookHandler(webapp2.RequestHandler):
             try:
                 indexOfTheIndex = text.index(" ")
             except ValueError, err:
-                reply("Space seperating index and text not found!")
+                reply("Space separating index and text not found!")
                 return
             
             index = 0
