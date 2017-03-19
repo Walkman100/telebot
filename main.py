@@ -231,6 +231,7 @@ class WebhookHandler(webapp2.RequestHandler):
             helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
             helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
             helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
+            helpText += "\n`/roll <number of die>d<sides of die>` - Return `number of die` amount of random numbers from 1 to `sides of die`"
             helpText += "\n\n*Custom Message*"
             helpText += "\n`/msgset <text>` - sets the custom message to `text`"
             helpText += "\n`/msgadd <text>` - adds `text` to the end"
@@ -352,6 +353,29 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply(numeralconverter.checkAndReturnRomanNumeral(text))
             except urllib2.HTTPError, err:
                 reply("ERROR: `" + str(err) + "`")
+        elif text.lower() == "roll":
+            reply("Usage: `/roll <number of die>d<sides of die>`")
+        elif text.lower().startswith("roll"):
+            text = CleanText("roll", text)
+            sendText = ""
+            try:
+                inputArgs = text.split("d")
+            except ValueError:
+                reply("`" + text + "` does not contain `d`!")
+                return
+
+            if len(inputArgs) <> 2:
+                reply("`" + text + "` can't be split into two elements by `d`!")
+                return
+
+            if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
+                i = 0
+                while i < int(inputArgs[0]):
+                    sendText += "\n" + str(random.randint(1, int(inputArgs[1])))
+                    i += 1
+                reply(sendText)
+            else:
+                reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
         elif text.lower().startswith("msgset"):
             text = CleanText("msgset", text)
             setMessage(chat_id, text)
@@ -367,7 +391,7 @@ class WebhookHandler(webapp2.RequestHandler):
             indexOfTheIndex = 0
             try:
                 indexOfTheIndex = text.index(" ")
-            except ValueError, err:
+            except ValueError:
                 reply("Space separating index and text not found!")
                 return
             
