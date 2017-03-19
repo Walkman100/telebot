@@ -21,46 +21,46 @@ def checkAndReturnRomanNumeral(input):
 
 def returnRomanNumeral(number):
     returnString = ""
-    if number > 1000:
+    if number >= 1000:
         for i in range(1, (number // 1000) +1):
             returnString = returnString + "M"
         number -= (number // 1000) * 1000
-    while number > 900:
+    while number >= 900:
         number -= 900
         returnString = returnString + "CM"
     
-    while number > 500:
+    while number >= 500:
         number -= 500
         returnString = returnString + "D"
-    while number > 400:
+    while number >= 400:
         number -= 400
         returnString = returnString + "CD"
     
-    while number > 100:
+    while number >= 100:
         number -= 100
         returnString = returnString + "C"
-    while number > 90:
+    while number >= 90:
         number -= 90
         returnString = returnString + "XC"
     
-    while number > 50:
+    while number >= 50:
         number -= 50
         returnString = returnString + "L"
-    while number > 40:
+    while number >= 40:
         number -= 40
         returnString = returnString + "XL"
     
-    while number > 10:
+    while number >= 10:
         number -= 10
         returnString = returnString + "X"
-    while number > 9:
+    while number >= 9:
         number -= 9
         returnString = returnString + "IX"
     
-    while number > 5:
+    while number >= 5:
         number -= 5
         returnString = returnString + "V"
-    while number > 4:
+    while number >= 4:
         number -= 4
         returnString = returnString + "IV"
     
