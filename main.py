@@ -6,6 +6,7 @@ import logging
 import random
 import urllib
 import urllib2
+import sys # for catch-all error reporting
 
 # for sending images
 from PIL import Image
@@ -109,67 +110,76 @@ class WebhookHandler(webapp2.RequestHandler):
             logging.info("received message: " + text + ", from " + fr["first_name"])
         
         def reply(msg=None, img=None):
-            if msg:
-                resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
-                    "chat_id": str(chat_id),
-                    "text": msg.encode("utf-8"),
-                    "parse_mode": "Markdown",
-                    "disable_web_page_preview": "true",
-                    "reply_to_message_id": str(message_id),
-                })).read()
-            elif img:
-                resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
-                    ("chat_id", str(chat_id)),
-                    ("reply_to_message_id", str(message_id)),
-                ], [
-                    ("photo", "image.jpg", img),
-                ])
-            else:
-                logging.error("no msg or img specified")
-                resp = None
+            try:
+                if msg:
+                    resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
+                        "chat_id": str(chat_id),
+                        "text": msg.encode("utf-8"),
+                        "parse_mode": "Markdown",
+                        "disable_web_page_preview": "true",
+                        "reply_to_message_id": str(message_id),
+                    })).read()
+                elif img:
+                    resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
+                        ("chat_id", str(chat_id)),
+                        ("reply_to_message_id", str(message_id)),
+                    ], [
+                        ("photo", "image.jpg", img),
+                    ])
+                else:
+                    logging.error("no msg or img specified")
+                    resp = None
 
-            logging.info("send response: " + str(resp))
+                logging.info("send response: " + str(resp))
+            except:
+                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
         def reply_html(msg=None, img=None): # exactly the same as reply() but parse it as html
-            if msg:
-                resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
-                    "chat_id": str(chat_id),
-                    "text": msg.encode("utf-8"),
-                    "parse_mode": "HTML",
-                    "disable_web_page_preview": "true",
-                    "reply_to_message_id": str(message_id),
-                })).read()
-            elif img:
-                resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
-                    ("chat_id", str(chat_id)),
-                ], [
-                    ("photo", "image.jpg", img),
-                ])
-            else:
-                logging.error("no msg or img specified")
-                resp = None
+            try:
+                if msg:
+                    resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
+                        "chat_id": str(chat_id),
+                        "text": msg.encode("utf-8"),
+                        "parse_mode": "HTML",
+                        "disable_web_page_preview": "true",
+                        "reply_to_message_id": str(message_id),
+                    })).read()
+                elif img:
+                    resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
+                        ("chat_id", str(chat_id)),
+                    ], [
+                        ("photo", "image.jpg", img),
+                    ])
+                else:
+                    logging.error("no msg or img specified")
+                    resp = None
 
-            logging.info("send response: " + str(resp))
+                logging.info("send response: " + str(resp))
+            except:
+                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
         def send_message(msg=None, img=None): # exactly the same as reply() but no reply_to_message_id parameter
-            if msg:
-                resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
-                    "chat_id": str(chat_id),
-                    "text": msg.encode("utf-8"),
-                    "parse_mode": "Markdown",
-                    "disable_web_page_preview": "true",
-                })).read()
-            elif img:
-                resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
-                    ("chat_id", str(chat_id)),
-                ], [
-                    ("photo", "image.jpg", img),
-                ])
-            else:
-                logging.error("no msg or img specified")
-                resp = None
+            try:
+                if msg:
+                    resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
+                        "chat_id": str(chat_id),
+                        "text": msg.encode("utf-8"),
+                        "parse_mode": "Markdown",
+                        "disable_web_page_preview": "true",
+                    })).read()
+                elif img:
+                    resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
+                        ("chat_id", str(chat_id)),
+                    ], [
+                        ("photo", "image.jpg", img),
+                    ])
+                else:
+                    logging.error("no msg or img specified")
+                    resp = None
 
-            logging.info("send response: " + str(resp))
+                logging.info("send response: " + str(resp))
+            except:
+                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
         def send_chat_action(action): # https://core.telegram.org/bots/api#sendchataction
             resp = urllib2.urlopen(BASE_URL + "sendChatAction", urllib.urlencode({
@@ -290,6 +300,8 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply("`" + text + "` contains an invalid unicode character sequence!")
             except urllib2.HTTPError, err:
                 reply("ERROR: `" + str(err) + "`")
+            except:
+                reply("Unexpected error caught!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         elif text.lower() in ["echo", "recho", "shout"]:
             reply("Usage: `/" + text.lower() + " <text>`")
         elif text.lower().startswith("echo"):
@@ -336,7 +348,7 @@ class WebhookHandler(webapp2.RequestHandler):
             except UnicodeDecodeError, err:
                 reply("UnicodeDecodeError: `" + str(err) + "`")
             except:
-                reply("Couldn't resolve `" + text + "`!")
+                reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]))
         elif text.lower() == "r2a":
             reply("Usage: `/r2a <roman numerals>`")
         elif text.lower().startswith("r2a"):
