@@ -38,25 +38,25 @@ class MessageList(ndb.Model):
 # ================================
 
 def setUnknownCommandEnabled(chat_id, yes):
-    es = UnknownCommandStatus.get_or_insert(str(chat_id))
-    es.enabled = yes
-    es.put()
+    ucs = UnknownCommandStatus.get_or_insert(str(chat_id))
+    ucs.enabled = yes
+    ucs.put()
 
 def getUnknownCommandEnabled(chat_id):
-    es = UnknownCommandStatus.get_by_id(str(chat_id))
-    if es:
-        return es.enabled
+    ucs = UnknownCommandStatus.get_by_id(str(chat_id))
+    if ucs:
+        return ucs.enabled
     return True
 
 def setMessage(chat_id, message):
-    es = MessageList.get_or_insert(str(chat_id))
-    es.message = message
-    es.put()
+    ml = MessageList.get_or_insert(str(chat_id))
+    ml.message = message
+    ml.put()
 
 def getMessage(chat_id):
-    es = MessageList.get_by_id(str(chat_id))
-    if es:
-        return es.message
+    ml = MessageList.get_by_id(str(chat_id))
+    if ml:
+        return ml.message
     return ""
 
 # ================================
@@ -133,6 +133,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.info("send response: " + str(resp))
             except:
                 reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                logging.info("Error responding with " + msg)
         
         def reply_html(msg=None, img=None): # exactly the same as reply() but parse it as html
             try:
@@ -157,6 +158,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.info("send response: " + str(resp))
             except:
                 reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                logging.info("Error responding with " + msg)
         
         def send_message(msg=None, img=None): # exactly the same as reply() but no reply_to_message_id parameter
             try:
@@ -180,6 +182,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.info("send response: " + str(resp))
             except:
                 reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                logging.info("Error responding with " + msg)
         
         def send_chat_action(action): # https://core.telegram.org/bots/api#sendchataction
             resp = urllib2.urlopen(BASE_URL + "sendChatAction", urllib.urlencode({
@@ -187,7 +190,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 "action": str(action),
             })).read()
 
-            logging.info("send response: " + str(resp))
+            logging.info("send_chat_action response: " + str(resp))
 
         admins = [61311478, 83416231]
         def isSudo():
@@ -343,12 +346,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 reply("`" + back + "`")
             except urllib2.HTTPError, err:
                 reply("HTTPError: `" + str(err) + "`")
+            except urllib2.URLError, err:
+                reply("URLError: `" + str(err) + "`")
             except ValueError, err:
                 reply("ValueError: `" + str(err) + "`")
             except UnicodeDecodeError, err:
                 reply("UnicodeDecodeError: `" + str(err) + "`")
             except:
-                reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]))
+                reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
         elif text.lower() == "r2a":
             reply("Usage: `/r2a <roman numerals>`")
         elif text.lower().startswith("r2a"):
