@@ -198,255 +198,252 @@ class WebhookHandler(webapp2.RequestHandler):
                 return True
             return False
         
-        # Clean up text variable
+        # Clean end of text
         if text.lower().endswith("@walkmanbot"): text = text[:-11]
         if text.endswith(" "): text = text[:-1]
+        # Seperate command and text
         if text.startswith("/") or text.startswith("#") or text.startswith("!"): text = text[1:]
-
-        def CleanText(command, text):  # Gah stupid python not allowing
-            text = text[len(command):] # access to outer variables
-            if text.lower().startswith("@walkmanbot"): text = text[11:]
-            if text.startswith(" "): text = text[1:]
-            return text # Gah stupid python not having ByRef
-
+        try:
+            commandIndex = text.index(" ")
+            command = text[:commandIndex]
+            text = text[commandIndex + 1:]
+            command = command.lower()
+            if command.endswith("@walkmanbot"): command = command[:-11]
+        except ValueError:
+            command = ""
+        # Clean start of text
+        if text.startswith(" "): text = text[1:]
+        if text.lower().startswith("@walkmanbot"): text = text[11:]
+        if text.startswith(" "): text = text[1:]
         # COMMANDS BELOW
-        if text.lower() == "start":
-            reply("Use /help for commands")
-        elif text.lower() == "ucs":
-            if isSudo():
-                if getUnknownCommandEnabled(chat_id):
-                    setUnknownCommandEnabled(chat_id, False)
-                    reply("unknown command messages disabled")
+        def processCommands(command, text):
+            if command == "start":
+                reply("Use /help for commands")
+            elif command == "ucs":
+                if isSudo():
+                    if getUnknownCommandEnabled(chat_id):
+                        setUnknownCommandEnabled(chat_id, False)
+                        reply("unknown command messages disabled")
+                    else:
+                        setUnknownCommandEnabled(chat_id, True)
+                        reply("unknown command messages enabled")
                 else:
-                    setUnknownCommandEnabled(chat_id, True)
-                    reply("unknown command messages enabled")
-            else:
-                reply("You are not an admin!")
-        elif text.lower() == "about":
-            reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
-        elif text.lower() == "info":
-            infoText = "*Telegram Command input info:* After typing `/`:"
-            infoText += "\nDesktop (Windows, Linux & Mac QT Client):\n- Use the arrow keys or your mouse to highlight a command"
-            infoText += "\n- Use `Tab` to insert it into the input box"
-            infoText += "\nMobile (Official Android Client & forks):\n- Scroll to a command"
-            infoText += "\n- Tap-and-hold on it to insert it into the input box"
-            reply(infoText)
-        elif text.lower() == "help":
-            helpText = "*Available commands*"
-            helpText += "\n/about - Show version info"
-            helpText += "\n/help - Show this help"
-            helpText += "\n/whoAmI - Get ID's and info about the user"
-            helpText += "\n/image - Send a 'randomly' generated image"
-            helpText += "\n`/echo <text>` - Respond with `text`, supports markdown"
-            helpText += "\n`/recho <text>` - Respond with `text` reversed"
-            helpText += "\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211"
-            helpText += "\n`/shout <text>` - Shout `text` in caps"
-            helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
-            helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
-            helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
-            helpText += "\n`/roll <number of die>d<sides of die>` - Return `number of die` amount of random numbers from 1 to `sides of die`"
-            helpText += "\n\n*Custom Message*"
-            helpText += "\n`/msgset <text>` - sets the custom message to `text`"
-            helpText += "\n`/msgadd <text>` - adds `text` to the end"
-            helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
-            helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
-            helpText += "\n/msg <text> - send the custom message with `text` on the end"
-            # helpText += "\n/"
-            send_message(helpText)
-        elif text.lower() == "image":
-            send_chat_action("upload_photo")
-            img = Image.new("RGB", (512, 512))
-            base = random.randint(0, 16777216)
-            pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
-            img.putdata(pixels)
-            output = StringIO.StringIO()
-            img.save(output, "JPEG")
-            reply(img=output.getvalue())
-        elif text.lower() == "whoami":
-            replystring = "You are <code>"
-            try:
-                replystring += fr["first_name"] + "</code> "
-            except KeyError, err:
-                pass
-            
-            try:
-                replystring += "(first) <code>" + fr["last_name"] + "</code> (last) "
-            except KeyError, err:
-                pass
-            
-            try:
-                replystring += "(@" + fr["username"] + ") "
-            except KeyError, err:
-                pass
-            
-            replystring += "with an ID of <code>" + str(fr["id"]) + "</code>, chatting in a " + chat["type"]
-            try:
-                replystring += " chat called <code>" + chat["title"] + "</code> "
-            except KeyError, err:
-                replystring += " chat "
-            
-            replystring += "with ID <code>" + str(chat_id) + "</code>."
-            try:
-                reply_html(replystring)
-            except urllib2.HTTPError, err:
-                reply("HTTPError: " + str(err))
-        elif text.lower() == "uecho":
-            reply("Usage: `/uecho <unicode sequence>`")
-        elif text.lower().startswith("uecho"):
-            text = CleanText("uecho", text)
-            if text.count("\\") == 0: text = "\\" + text
-            try:
-                send_message(text.decode("unicode-escape"))
-            except UnicodeEncodeError, err:
-                reply("ERROR: `" + str(err) + "`\n\nDon't use unicode! (But this message can be used to find the sequence of unicode characters)")
-            except UnicodeDecodeError, err:
-                reply("`" + text + "` contains an invalid unicode character sequence!")
-            except urllib2.HTTPError, err:
-                reply("ERROR: `" + str(err) + "`")
-            except:
-                reply("Unexpected error caught!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
-        elif text.lower() in ["echo", "recho", "shout"]:
-            reply("Usage: `/" + text.lower() + " <text>`")
-        elif text.lower().startswith("echo"):
-            text = CleanText("echo", text)
-            send_message(text)
-        elif text.lower().startswith("recho"):
-            text = CleanText("recho", text)
-            revTxt = ""
-            for letter in text:
-                revTxt = letter + revTxt
-            send_message(revTxt)
-        elif text.lower().startswith("shout"):
-            text = CleanText("shout", text)
-            text = text.upper()
-            text = text[:20] # truncate text so message can't be ridiculously long
+                    reply("You are not an admin!")
+            elif command == "about":
+                reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
+            elif command == "info":
+                infoText = "*Telegram Command input info:* After typing `/`:"
+                infoText += "\nDesktop (Windows, Linux & Mac QT Client):\n- Use the arrow keys or your mouse to highlight a command"
+                infoText += "\n- Use `Tab` to insert it into the input box"
+                infoText += "\nMobile (Official Android Client & forks):\n- Scroll to a command"
+                infoText += "\n- Tap-and-hold on it to insert it into the input box"
+                reply(infoText)
+            elif command == "help":
+                helpText = "*Available commands*"
+                helpText += "\n/about - Show version info"
+                helpText += "\n/help - Show this help"
+                helpText += "\n/whoAmI - Get ID's and info about the user"
+                helpText += "\n/image - Send a 'randomly' generated image"
+                helpText += "\n`/echo <text>` - Respond with `text`, supports markdown"
+                helpText += "\n`/recho <text>` - Respond with `text` reversed"
+                helpText += "\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211"
+                helpText += "\n`/shout <text>` - Shout `text` in caps"
+                helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
+                helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
+                helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
+                helpText += "\n`/roll <number of die>d<sides of die>` - Return `number of die` amount of random numbers from 1 to `sides of die`"
+                helpText += "\n\n*Custom Message*"
+                helpText += "\n`/msgset <text>` - sets the custom message to `text`"
+                helpText += "\n`/msgadd <text>` - adds `text` to the end"
+                helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
+                helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
+                helpText += "\n/msg <text> - send the custom message with `text` on the end"
+                # helpText += "\n/"
+                send_message(helpText)
+            elif command == "image":
+                send_chat_action("upload_photo")
+                img = Image.new("RGB", (512, 512))
+                base = random.randint(0, 16777216)
+                pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
+                img.putdata(pixels)
+                output = StringIO.StringIO()
+                img.save(output, "JPEG")
+                reply(img=output.getvalue())
+            elif command == "whoami":
+                replystring = "You are <code>"
+                try:
+                    replystring += fr["first_name"] + "</code> "
+                except KeyError, err:
+                    pass
+                
+                try:
+                    replystring += "(first) <code>" + fr["last_name"] + "</code> (last) "
+                except KeyError, err:
+                    pass
+                
+                try:
+                    replystring += "(@" + fr["username"] + ") "
+                except KeyError, err:
+                    pass
+                
+                replystring += "with an ID of <code>" + str(fr["id"]) + "</code>, chatting in a " + chat["type"]
+                try:
+                    replystring += " chat called <code>" + chat["title"] + "</code> "
+                except KeyError, err:
+                    replystring += " chat "
+                
+                replystring += "with ID <code>" + str(chat_id) + "</code>."
+                try:
+                    reply_html(replystring)
+                except urllib2.HTTPError, err:
+                    reply("HTTPError: " + str(err))
+            elif command == "uecho" and text == "":
+                reply("Usage: `/uecho <unicode sequence>`")
+            elif command == "uecho":
+                if text.count("\\") == 0: text = "\\" + text
+                try:
+                    send_message(text.decode("unicode-escape"))
+                except UnicodeEncodeError, err:
+                    reply("ERROR: `" + str(err) + "`\n\nDon't use unicode! (But this message can be used to find the sequence of unicode characters)")
+                except UnicodeDecodeError, err:
+                    reply("`" + text + "` contains an invalid unicode character sequence!")
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`")
+                except:
+                    reply("Unexpected error caught!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+            elif command in ["echo", "recho", "shout"] and text == "":
+                reply("Usage: `/" + text.lower() + " <text>`")
+            elif command == "echo":
+                send_message(text)
+            elif command == "recho":
+                revTxt = ""
+                for letter in text:
+                    revTxt = letter + revTxt
+                send_message(revTxt)
+            elif command == "shout":
+                text = text.upper()
+                text = text[:20] # truncate text so message can't be ridiculously long
 
-            shoutTxt = "<code>"
-            for letter in text:
-                shoutTxt += letter + " "
+                shoutTxt = "<code>"
+                for letter in text:
+                    shoutTxt += letter + " "
 
-            text = text[1:]
-            seperator = " "
-            for letter in text:
-                shoutTxt += "\n" + letter + seperator + letter
-                seperator += "  " # 3D-ness
-            shoutTxt = shoutTxt + "</code>"
+                text = text[1:]
+                seperator = " "
+                for letter in text:
+                    shoutTxt += "\n" + letter + seperator + letter
+                    seperator += "  " # 3D-ness
+                shoutTxt = shoutTxt + "</code>"
 
-            try:
-                reply_html(shoutTxt)
-            except urllib2.HTTPError, err:
-                reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
-        elif text.lower() == "curl":
-            reply("Usage: `/curl <url>`")
-        elif text.lower().startswith("curl"):
-            text = CleanText("curl", text)
-            send_chat_action("upload_document")
-            try:
-                back = urllib2.urlopen(text).read()
-                reply("`" + back + "`")
-            except urllib2.HTTPError, err:
-                reply("HTTPError: `" + str(err) + "`")
-            except urllib2.URLError, err:
-                reply("URLError: `" + str(err) + "`")
-            except ValueError, err:
-                reply("ValueError: `" + str(err) + "`")
-            except UnicodeDecodeError, err:
-                reply("UnicodeDecodeError: `" + str(err) + "`")
-            except:
-                reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
-        elif text.lower() == "r2a":
-            reply("Usage: `/r2a <roman numerals>`")
-        elif text.lower().startswith("r2a"):
-            text = CleanText("r2a", text)
-            try:
-                reply(numeralconverter.returnArabicNumber(text))
-            except urllib2.HTTPError, err:
-                reply("ERROR: `" + str(err) + "`")
-        elif text.lower() == "a2r":
-            reply("Usage: `/a2r <arabic number>`")
-        elif text.lower().startswith("a2r"):
-            text = CleanText("a2r", text)
-            try:
-                reply(numeralconverter.checkAndReturnRomanNumeral(text))
-            except urllib2.HTTPError, err:
-                reply("ERROR: `" + str(err) + "`")
-        elif text.lower() == "roll":
-            reply("Usage: `/roll <number of die>d<sides of die>`")
-        elif text.lower().startswith("roll"):
-            text = CleanText("roll", text)
-            sendText = ""
-            try:
-                inputArgs = text.split("d")
-            except ValueError:
-                reply("`" + text + "` does not contain `d`!")
-                return
+                try:
+                    reply_html(shoutTxt)
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
+            elif command == "curl" and text == "":
+                reply("Usage: `/curl <url>`")
+            elif command == "curl":
+                send_chat_action("upload_document")
+                try:
+                    back = urllib2.urlopen(text).read()
+                    reply("`" + back + "`")
+                except urllib2.HTTPError, err:
+                    reply("HTTPError: `" + str(err) + "`")
+                except urllib2.URLError, err:
+                    reply("URLError: `" + str(err) + "`")
+                except ValueError, err:
+                    reply("ValueError: `" + str(err) + "`")
+                except UnicodeDecodeError, err:
+                    reply("UnicodeDecodeError: `" + str(err) + "`")
+                except:
+                    reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
+            elif command == "r2a" and text == "":
+                reply("Usage: `/r2a <roman numerals>`")
+            elif command == "r2a":
+                try:
+                    reply(numeralconverter.returnArabicNumber(text))
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`")
+            elif command == "a2r" and text == "":
+                reply("Usage: `/a2r <arabic number>`")
+            elif command == "a2r":
+                try:
+                    reply(numeralconverter.checkAndReturnRomanNumeral(text))
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`")
+            elif command == "roll" and text == "":
+                reply("Usage: `/roll <number of die>d<sides of die>`")
+            elif command == "roll":
+                sendText = ""
+                try:
+                    inputArgs = text.split("d")
+                except ValueError:
+                    reply("`" + text + "` does not contain `d`!")
+                    return
 
-            if len(inputArgs) <> 2:
-                reply("`" + text + "` can't be split into two elements by `d`!")
-                return
+                if len(inputArgs) <> 2:
+                    reply("`" + text + "` can't be split into two elements by `d`!")
+                    return
 
-            if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
-                i = 0
-                while i < int(inputArgs[0]):
-                    sendText += "\n" + str(random.randint(1, int(inputArgs[1])))
-                    i += 1
-                reply(sendText)
-            else:
-                reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
-        elif text.lower().startswith("msgset"):
-            text = CleanText("msgset", text)
-            setMessage(chat_id, text)
-            reply("Custom Message set to `" + text + "`")
-        elif text.lower().startswith("msgadd"):
-            text = CleanText("msgadd", text)
-            text = getMessage(chat_id) + text
-            setMessage(chat_id, text)
-            reply("Custom Message set to `" + text + "`")
-        elif text.lower().startswith("msginsert"):
-            text = CleanText("msginsert", text)
-            
-            indexOfTheIndex = 0
-            try:
-                indexOfTheIndex = text.index(" ")
-            except ValueError:
-                reply("Space separating index and text not found!")
-                return
-            
-            index = 0
-            if numeralconverter.is_number(text[:indexOfTheIndex]):
-                index = int(text[:indexOfTheIndex])
-                text = text[indexOfTheIndex + 1:]
-            else:
-                reply("'" + text[:indexOfTheIndex] + "' isn't a number!")
-                return
-            
-            # now we have the index to insert to in `index`, and the text to insert at the index in `text`
-            text = getMessage(chat_id)[:index] + text + getMessage(chat_id)[index:]
-            setMessage(chat_id, text)
-            reply("Custom Message set to `" + text + "`")
-        elif text.lower().startswith("msgremove"):
-            text = CleanText("msgremove", text)
-            
-            if numeralconverter.is_number(text):
-                index = int(text)
-                text = getMessage(chat_id)
-                text = text[: len(text) - index]
+                if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
+                    i = 0
+                    while i < int(inputArgs[0]):
+                        sendText += "\n" + str(random.randint(1, int(inputArgs[1])))
+                        i += 1
+                    reply(sendText)
+                else:
+                    reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
+            elif command == "msgset":
                 setMessage(chat_id, text)
                 reply("Custom Message set to `" + text + "`")
-            else:
-                reply("'" + text + "' isn't a number!")
-        elif text.lower().startswith("msg"):
-            text = CleanText("msg", text)
-            if text == "":
-                text = getMessage(chat_id)
-            else:
-                text = getMessage(chat_id) + " " + text
-            if text == "":
-                reply("Custom message hasn't been set, use `/msgset <text>` to set it")
-            else:
-                reply(text)
-        elif getUnknownCommandEnabled(chat_id):
-            reply("Unknown command `" + text + "`. Use /help to see existing commands")
+            elif command == "msgadd":
+                text = getMessage(chat_id) + text
+                setMessage(chat_id, text)
+                reply("Custom Message set to `" + text + "`")
+            elif command == "msginsert":
+                indexOfTheIndex = 0
+                try:
+                    indexOfTheIndex = text.index(" ")
+                except ValueError:
+                    reply("Space separating index and text not found!")
+                    return
+                
+                index = 0
+                if numeralconverter.is_number(text[:indexOfTheIndex]):
+                    index = int(text[:indexOfTheIndex])
+                    text = text[indexOfTheIndex + 1:]
+                else:
+                    reply("'" + text[:indexOfTheIndex] + "' isn't a number!")
+                    return
+                
+                # now we have the index to insert to in `index`, and the text to insert at the index in `text`
+                text = getMessage(chat_id)[:index] + text + getMessage(chat_id)[index:]
+                setMessage(chat_id, text)
+                reply("Custom Message set to `" + text + "`")
+            elif command == "msgremove":
+                if numeralconverter.is_number(text):
+                    index = int(text)
+                    text = getMessage(chat_id)
+                    text = text[: len(text) - index]
+                    setMessage(chat_id, text)
+                    reply("Custom Message set to `" + text + "`")
+                else:
+                    reply("'" + text + "' isn't a number!")
+            elif command == "msg":
+                if text == "":
+                    text = getMessage(chat_id)
+                else:
+                    text = getMessage(chat_id) + " " + text
+                if text == "":
+                    reply("Custom message hasn't been set, use `/msgset <text>` to set it")
+                else:
+                    reply(text)
+            elif getUnknownCommandEnabled(chat_id):
+                reply("Unknown command `" + command + "`. Use /help to see existing commands")
+        
+        if command <> "":
+            processCommands(command, text)
+        else:
+            processCommands(text.lower(), "")
 
 app = webapp2.WSGIApplication([
     ("/me", MeHandler),
