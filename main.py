@@ -35,6 +35,10 @@ class MessageList(ndb.Model):
     message = ndb.StringProperty(indexed=False, default="")
     # TextProperty is "unlimited length" (https://cloud.google.com/appengine/docs/python/ndb/properties#types)
 
+class LastActionList(ndb.Model):
+    # key name: str(fr["id"])
+    lastAction = ndb.StringProperty(indexed=False, default="none")
+
 # ================================
 
 def setUnknownCommandEnabled(chat_id, yes):
@@ -58,6 +62,17 @@ def getMessage(chat_id):
     if ml:
         return ml.message
     return ""
+
+def setLastAction(user_id, action):
+    la = LastActionList.get_or_insert(user_id)
+    la.lastAction = action
+    la.put()
+
+def getLastAction(user_id):
+    la = LastActionList.get_by_id(user_id)
+    if la:
+        return la.lastAction
+    return "none"
 
 # ================================
 
@@ -298,7 +313,11 @@ class WebhookHandler(webapp2.RequestHandler):
                 except urllib2.HTTPError, err:
                     reply("HTTPError: " + str(err))
             elif command == "uecho" and text == "":
-                reply("Usage: `/uecho <unicode sequence>`")
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter text to encode:")
+                else:
+                    reply("Usage: `/uecho <unicode sequence>`")
             elif command == "uecho":
                 if text.count("\\") == 0: text = "\\" + text
                 try:
@@ -312,7 +331,11 @@ class WebhookHandler(webapp2.RequestHandler):
                 except:
                     reply("Unexpected error caught!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command in ["echo", "recho", "shout"] and text == "":
-                reply("Usage: `/" + text.lower() + " <text>`")
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter text:")
+                else:
+                    reply("Usage: `/" + command + " <text>`")
             elif command == "echo":
                 send_message(text)
             elif command == "recho":
@@ -340,7 +363,11 @@ class WebhookHandler(webapp2.RequestHandler):
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
             elif command == "curl" and text == "":
-                reply("Usage: `/curl <url>`")
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter url:")
+                else:
+                    reply("Usage: `/curl <url>`")
             elif command == "curl":
                 send_chat_action("upload_document")
                 try:
@@ -357,21 +384,33 @@ class WebhookHandler(webapp2.RequestHandler):
                 except:
                     reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
             elif command == "r2a" and text == "":
-                reply("Usage: `/r2a <roman numerals>`")
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter roman numerals:")
+                else:
+                    reply("Usage: `/r2a <roman numerals>`")
             elif command == "r2a":
                 try:
                     reply(numeralconverter.returnArabicNumber(text))
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`")
             elif command == "a2r" and text == "":
-                reply("Usage: `/a2r <arabic number>`")
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter arabic number:")
+                else:
+                    reply("Usage: `/a2r <arabic number>`")
             elif command == "a2r":
                 try:
                     reply(numeralconverter.checkAndReturnRomanNumeral(text))
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`")
             elif command == "roll" and text == "":
-                reply("Usage: `/roll <number of die>d<sides of die>`")
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter <number of die>d<sides of die>:")
+                else:
+                    reply("Usage: `/roll <number of die>d<sides of die>`")
             elif command == "roll":
                 sendText = ""
                 try:
@@ -437,9 +476,13 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Custom message hasn't been set, use `/msgset <text>` to set it")
                 else:
                     reply(text)
-            elif getUnknownCommandEnabled(chat_id):
-                reply("Unknown command `" + command + "`. Use /help to see existing commands")
-        
+            else:
+                if chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
+                    processCommands(getLastAction(str(fr["id"])), command + " " + text)
+                else:
+                    if getUnknownCommandEnabled(chat_id):
+                        reply("Unknown command `" + command + "`. Use /help to see existing commands")
+
         if command <> "":
             processCommands(command, text)
         else:
