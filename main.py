@@ -267,12 +267,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
                 helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
                 helpText += "\n`/roll <number of die>d<sides of die>` - Return `number of die` amount of random numbers from 1 to `sides of die`"
+                helpText += "\n`/randbetween <start> <end>` - Sends a random number between `start` and `end`"
                 helpText += "\n\n*Custom Message*"
                 helpText += "\n`/msgset <text>` - sets the custom message to `text`"
                 helpText += "\n`/msgadd <text>` - adds `text` to the end"
                 helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
                 helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
                 helpText += "\n/msg <text> - send the custom message with `text` on the end"
+                helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
                 # helpText += "\n/"
                 send_message(helpText)
             elif command == "image":
@@ -463,6 +465,21 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply(sendText)
                 else:
                     reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
+            elif command == "randbetween":
+                #randbetween 5 10
+                inputArgs = text.split(" ")
+
+                if len(inputArgs) <> 2:
+                    reply("`" + text + "` does not contain one space!")
+                    return
+
+                if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
+                    try:
+                        reply(str(random.randint(int(inputArgs[0]), int(inputArgs[1]))))
+                    except ValueError, err:
+                        reply("ERROR: `" + str(err) + "`\n`random.randint()` doesn't seem to be able to go backwards " + u"\U0001f61e")
+                else:
+                    reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
             elif command == "msgset":
                 setMessage(chat_id, text)
                 reply("Custom Message set to `" + text + "`")
@@ -506,6 +523,15 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = getMessage(chat_id) + " " + text
                 if text == "":
                     reply("Custom message hasn't been set, use `/msgset <text>` to set it")
+                else:
+                    reply(text)
+            elif command == "mymsg":
+                if text == "":
+                    text = getMessage(str(fr["id"]))
+                else:
+                    text = getMessage(str(fr["id"])) + " " + text
+                if text == "":
+                    reply("Custom message hasn't been set, use `/msgset <text>` in private chat (@WalkmanBot) to set it")
                 else:
                     reply(text)
             else:
