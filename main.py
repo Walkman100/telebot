@@ -330,6 +330,38 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("ERROR: `" + str(err) + "`")
                 except:
                     reply("Unexpected error caught!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+            elif command == "echoid":
+                if isSudo():
+                    if not text.startswith("-"):
+                        text = "-" + text
+                    indexOfID = 0
+                    try:
+                        indexOfID = text.index(" ")
+                    except ValueError:
+                        reply("Space separating ID and text not found!")
+                        return
+
+                    chat_id2 = 0
+                    if numeralconverter.is_number(text[:indexOfID]):
+                        chat_id2 = int(text[:indexOfID])
+                        text = text[indexOfID + 1:]
+                    else:
+                        reply("'" + text[:indexOfID] + "' isn't a number!")
+                        return
+
+                    try:
+                        resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
+                            "chat_id": str(chat_id2),
+                            "text": text.encode("utf-8"),
+                            "parse_mode": "Markdown",
+                            "disable_web_page_preview": "true",
+                        })).read()
+
+                        logging.info("send response: " + str(resp))
+                    except:
+                        reply("Error sending message to " + str(chat_id2) + "!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                else:
+                    reply("You are not an admin!")
             elif command in ["echo", "recho", "shout"] and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
