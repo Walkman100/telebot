@@ -290,23 +290,23 @@ class WebhookHandler(webapp2.RequestHandler):
                 replystring = "You are <code>"
                 try:
                     replystring += fr["first_name"] + "</code> "
-                except KeyError, err:
+                except KeyError:
                     pass
                 
                 try:
                     replystring += "(first) <code>" + fr["last_name"] + "</code> (last) "
-                except KeyError, err:
+                except KeyError:
                     pass
                 
                 try:
                     replystring += "(@" + fr["username"] + ") "
-                except KeyError, err:
+                except KeyError:
                     pass
                 
                 replystring += "with an ID of <code>" + str(fr["id"]) + "</code>, chatting in a " + chat["type"]
                 try:
                     replystring += " chat called <code>" + chat["title"] + "</code> "
-                except KeyError, err:
+                except KeyError:
                     replystring += " chat "
                 
                 replystring += "with ID <code>" + str(chat_id) + "</code>."
@@ -327,7 +327,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 except UnicodeEncodeError, err:
                     reply("ERROR: `" + str(err) + "`\n\nDon't use unicode! (But this message can be used to find the sequence of unicode characters)")
                 except UnicodeDecodeError, err:
-                    reply("`" + text + "` contains an invalid unicode character sequence!")
+                    reply("`" + text + "` contains an invalid unicode character sequence!\n`" + str(err) + '`')
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`")
                 except:
@@ -447,14 +447,10 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Usage: `/roll <number of die>d<sides of die>`")
             elif command == "roll":
                 sendText = ""
-                try:
-                    inputArgs = text.split("d")
-                except ValueError:
-                    reply("`" + text + "` does not contain `d`!")
-                    return
+                inputArgs = text.split("d")
 
                 if len(inputArgs) <> 2:
-                    reply("`" + text + "` can't be split into two elements by `d`!")
+                    reply("`" + text + "` does not contain one `d`!")
                     return
 
                 if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
@@ -534,12 +530,10 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Custom message hasn't been set, use `/msgset <text>` in private chat (@WalkmanBot) to set it")
                 else:
                     reply(text)
-            else:
-                if chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
-                    processCommands(getLastAction(str(fr["id"])), command + " " + text)
-                else:
-                    if getUnknownCommandEnabled(chat_id):
-                        reply("Unknown command `" + command + "`. Use /help to see existing commands")
+            elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
+                processCommands(getLastAction(str(fr["id"])), command + " " + text)
+            elif getUnknownCommandEnabled(chat_id):
+                reply("Unknown command `" + command + "`. Use /help to see existing commands")
 
         if command <> "":
             processCommands(command, text)
