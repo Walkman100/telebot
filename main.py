@@ -331,7 +331,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`")
                 except:
-                    reply("Unexpected error caught!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                    reply("Caught unexpected error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command == "echoid":
                 if isSudo():
                     if not text.startswith("-"):
@@ -476,6 +476,17 @@ class WebhookHandler(webapp2.RequestHandler):
                         reply("ERROR: `" + str(err) + "`\n`random.randint()` doesn't seem to be able to go backwards " + u"\U0001f61e")
                 else:
                     reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
+            elif command == "calc" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter expression:")
+                else:
+                    reply("Usage: `/calc <expression>`")
+            elif command == "calc":
+                try:
+                    reply(str(eval(text)))
+                except:
+                    reply("Caught unexpected error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command == "msgset":
                 setMessage(chat_id, text)
                 reply("Custom Message set to `" + text + "`")
