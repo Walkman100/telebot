@@ -207,9 +207,9 @@ class WebhookHandler(webapp2.RequestHandler):
 
             logging.info("send_chat_action response: " + str(resp))
 
-        admins = [61311478, 83416231]
-        def isSudo():
-            if fr["id"] in admins:
+        botAdmins = [61311478, 83416231]
+        def isBotAdmin():
+            if fr["id"] in botAdmins:
                 return True
             return False
         
@@ -235,7 +235,7 @@ class WebhookHandler(webapp2.RequestHandler):
             if command == "start":
                 reply("Use /help for commands")
             elif command == "ucs":
-                if isSudo():
+                if isBotAdmin():
                     if getUnknownCommandEnabled(chat_id):
                         setUnknownCommandEnabled(chat_id, False)
                         reply("unknown command messages disabled")
@@ -268,6 +268,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
                 helpText += "\n`/roll <number of die>d<sides of die>` - Return `number of die` amount of random numbers from 1 to `sides of die`"
                 helpText += "\n`/randbetween <start> <end>` - Sends a random number between `start` and `end`"
+                helpText += "\n`/calc <expression>` - evaluates `expression`"
                 helpText += "\n\n*Custom Message*"
                 helpText += "\n`/msgset <text>` - sets the custom message to `text`"
                 helpText += "\n`/msgadd <text>` - adds `text` to the end"
@@ -333,7 +334,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 except:
                     reply("Caught unexpected error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command == "echoid":
-                if isSudo():
+                if isBotAdmin():
                     if not text.startswith("-"):
                         text = "-" + text
                     indexOfID = 0
@@ -453,6 +454,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("`" + text + "` does not contain one `d`!")
                     return
 
+                if inputArgs[0] == "":
+                    inputArgs[0] = "1"
                 if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
                     i = 0
                     while i < int(inputArgs[0]):
