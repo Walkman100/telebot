@@ -147,8 +147,8 @@ class WebhookHandler(webapp2.RequestHandler):
 
                 logging.info("send response: " + str(resp))
             except:
-                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
                 logging.info("Error responding with " + msg)
+                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
         def reply_html(msg=None, img=None): # exactly the same as reply() but parse it as html
             try:
@@ -172,8 +172,8 @@ class WebhookHandler(webapp2.RequestHandler):
 
                 logging.info("send response: " + str(resp))
             except:
-                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
                 logging.info("Error responding with " + msg)
+                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
         def send_message(msg=None, img=None): # exactly the same as reply() but no reply_to_message_id parameter
             try:
@@ -196,17 +196,42 @@ class WebhookHandler(webapp2.RequestHandler):
 
                 logging.info("send response: " + str(resp))
             except:
-                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
                 logging.info("Error responding with " + msg)
+                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
         def send_chat_action(action): # https://core.telegram.org/bots/api#sendchataction
             resp = urllib2.urlopen(BASE_URL + "sendChatAction", urllib.urlencode({
                 "chat_id": str(chat_id),
                 "action": str(action),
             })).read()
-
+            
             logging.info("send_chat_action response: " + str(resp))
-
+        
+        def get_chat_administrators():
+            resp = urllib2.urlopen(BASE_URL + "getChatAdministrators", urllib.urlencode({
+                "chat_id": str(chat_id)
+            })).read()
+            
+            chatAdmins = json.loads(resp)["result"]
+            return chatAdmins
+        
+        def isChatAdmin():
+            if chat["type"] == "private":
+                return True
+            
+            chatAdmins = get_chat_administrators()
+            AdminIDs = []
+            i = 0
+            try:
+                while True:
+                    AdminIDs.append(chatAdmins[i].get("user").get("id"))
+                    i += 1
+            except:
+                pass
+            if fr["id"] in AdminIDs:
+                return True
+            return False
+        
         botAdmins = [61311478, 83416231]
         def isBotAdmin():
             if fr["id"] in botAdmins:
