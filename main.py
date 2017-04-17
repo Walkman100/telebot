@@ -260,7 +260,7 @@ class WebhookHandler(webapp2.RequestHandler):
             if command == "start":
                 reply("Use /help for commands")
             elif command == "ucs":
-                if isBotAdmin():
+                if isBotAdmin() or isChatAdmin():
                     if getUnknownCommandEnabled(chat_id):
                         setUnknownCommandEnabled(chat_id, False)
                         reply("unknown command messages disabled")
@@ -336,6 +336,13 @@ class WebhookHandler(webapp2.RequestHandler):
                     replystring += " chat "
                 
                 replystring += "with ID <code>" + str(chat_id) + "</code>."
+                if isBotAdmin() and isChatAdmin():
+                    replystring += " You are a Bot Admin and a Chat Admin."
+                elif isBotAdmin():
+                    replystring += " You are a Bot Admin."
+                elif isChatAdmin():
+                    replystring += " You are a Chat Admin."
+                
                 try:
                     reply_html(replystring)
                 except urllib2.HTTPError, err:
@@ -389,7 +396,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     except:
                         reply("Error sending message to " + str(chat_id2) + "!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
                 else:
-                    reply("You are not an admin!")
+                    reply("You are not a Bot Admin!")
             elif command in ["echo", "recho", "shout"] and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
