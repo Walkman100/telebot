@@ -250,13 +250,14 @@ class WebhookHandler(webapp2.RequestHandler):
             command = command.lower()
             if command.endswith("@walkmanbot"): command = command[:-11]
         except ValueError:
-            command = ""
+            command = text.lower()
+            text = ""
         # Clean start of text
         if text.startswith(" "): text = text[1:]
         if text.lower().startswith("@walkmanbot"): text = text[11:]
         if text.startswith(" "): text = text[1:]
         # COMMANDS BELOW
-        def processCommands(command, text):
+        def processCommands(command, text, chat_id):
             if command == "start":
                 reply("Use /help for commands")
             elif command == "ucs":
@@ -577,14 +578,11 @@ class WebhookHandler(webapp2.RequestHandler):
                 else:
                     reply(text)
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
-                processCommands(getLastAction(str(fr["id"])), command + " " + text)
+                processCommands(getLastAction(str(fr["id"])), command + " " + text, chat_id)
             elif getUnknownCommandEnabled(chat_id):
                 reply("Unknown command `" + command + "`. Use /help to see existing commands")
-
-        if command <> "":
-            processCommands(command, text)
-        else:
-            processCommands(text.lower(), "")
+        
+        processCommands(command, text, chat_id)
 
 app = webapp2.WSGIApplication([
     ("/me", MeHandler),
