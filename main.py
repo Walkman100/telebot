@@ -258,7 +258,10 @@ class WebhookHandler(webapp2.RequestHandler):
         if text.startswith(" "): text = text[1:]
         # COMMANDS BELOW
         def processCommands(command, text, chat_id):
-            if command == "start":
+            # IGNORED
+            if command in ["s", "r"]:
+                pass
+            elif command == "start":
                 reply("Use /help for commands")
             elif command == "ucs":
                 if isBotAdmin() or isChatAdmin():
@@ -580,7 +583,10 @@ class WebhookHandler(webapp2.RequestHandler):
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
                 processCommands(getLastAction(str(fr["id"])), command + " " + text, chat_id)
             elif getUnknownCommandEnabled(chat_id):
-                reply("Unknown command `" + command + "`. Use /help to see existing commands")
+                if "fuck off" in (command + " " + text).lower():
+                    reply("Use /ucs to turn off Unknown Command messages")
+                else:
+                    reply("Unknown command `" + command + "`. Use /help to see existing commands")
         
         processCommands(command, text, chat_id)
 
