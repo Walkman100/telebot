@@ -119,8 +119,12 @@ class WebhookHandler(webapp2.RequestHandler):
         chat_id = chat["id"]
         
         if not text:
-            logging.info("no text")
-            return
+            try:
+                text = message.get("caption")
+                logging.info("received message: " + text + ", from " + fr["first_name"])
+            except:
+                logging.info("no text")
+                return
         else:
             logging.info("received message: " + text + ", from " + fr["first_name"])
         
@@ -260,6 +264,8 @@ class WebhookHandler(webapp2.RequestHandler):
         def processCommands(command, text, chat_id):
             # IGNORED
             if command in ["s", "r"]:
+                pass
+            if command.startswith("r/"):
                 pass
             elif command == "start":
                 reply("Use /help for commands")
@@ -583,7 +589,7 @@ class WebhookHandler(webapp2.RequestHandler):
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
                 processCommands(getLastAction(str(fr["id"])), command + " " + text, chat_id)
             elif getUnknownCommandEnabled(chat_id):
-                if "fuck off" in (command + " " + text).lower():
+                if "fuck off" in (command + " " + text).lower() or "shut the fuck up" in (command + " " + text).lower():
                     reply("Use /ucs to turn off Unknown Command messages")
                 else:
                     reply("Unknown command `" + command + "`. Use /help to see existing commands")
