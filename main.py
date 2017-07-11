@@ -309,7 +309,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n`/msgadd <text>` - adds `text` to the end"
                 helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
                 helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
-                helpText += "\n/msg <text> - send the custom message with `text` on the end"
+                helpText += "\n/msg <text> - send the custom message with `text` on the end, start with " + u'\xa7' + " for HTML instead of markdown"
                 helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
                 # helpText += "\n/"
                 send_message(helpText)
@@ -374,7 +374,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`")
                 except:
-                    reply("Caught unexpected error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                    reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command == "echoid":
                 if isBotAdmin():
                     if not text.startswith("-"):
@@ -531,7 +531,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 try:
                     reply(str(eval(text)))
                 except:
-                    reply("Caught unexpected error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                    reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command == "msgset":
                 setMessage(chat_id, text)
                 reply("Custom Message set to `" + text + "`")
@@ -575,6 +575,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = getMessage(chat_id) + " " + text
                 if text == "":
                     reply("Custom message hasn't been set, use `/msgset <text>` to set it")
+                elif text.startswith(u'\xa7'):
+                    reply_html(text[1:]) # [1:] is to remove the §
                 else:
                     reply(text)
             elif command == "mymsg":
@@ -584,6 +586,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     text = getMessage(str(fr["id"])) + " " + text
                 if text == "":
                     reply("Custom message hasn't been set, use `/msgset <text>` in private chat (@WalkmanBot) to set it")
+                elif text.startswith(u'\xa7'):
+                    reply_html(text[1:])
                 else:
                     reply(text)
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
