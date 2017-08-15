@@ -216,8 +216,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 "chat_id": str(chat_id)
             })).read()
             
-            chatAdmins = json.loads(resp)["result"]
-            return chatAdmins
+            return json.loads(resp)["result"]
         
         def isChatAdmin():
             if chat["type"] == "private":
@@ -262,6 +261,10 @@ class WebhookHandler(webapp2.RequestHandler):
         if text.startswith(" "): text = text[1:]
         # COMMANDS BELOW
         def processCommands(command, text, chat_id):
+            # This actually comes up, believe it or not
+            if text.startswith(" "): text = text[1:]
+            if text.endswith(" "): text = text[:-1]
+            
             # Ignored Input
             if command in ["s", "r"]:
                 pass
@@ -330,6 +333,12 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Enter <number of die>d<sides of die>:")
                 else:
                     reply("Usage: `/roll <number of die>d<sides of die>`")
+            elif command == "randbetween" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter <start> <end>:")
+                else:
+                    reply("Usage: `/randbetween <start> <end>`")
             elif command == "calc" and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
@@ -468,7 +477,6 @@ class WebhookHandler(webapp2.RequestHandler):
                 else:
                     reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
             elif command == "randbetween":
-                #randbetween 5 10
                 inputArgs = text.split(" ")
                 
                 if len(inputArgs) <> 2:
