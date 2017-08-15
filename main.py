@@ -377,15 +377,13 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             elif command == "echoid":
                 if isBotAdmin():
-                    if not text.startswith("-"):
-                        text = "-" + text
                     indexOfID = 0
                     try:
                         indexOfID = text.index(" ")
                     except ValueError:
                         reply("Space separating ID and text not found!")
                         return
-
+                    
                     chat_id2 = 0
                     if numeralconverter.is_number(text[:indexOfID]):
                         chat_id2 = int(text[:indexOfID])
@@ -393,7 +391,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     else:
                         reply("'" + text[:indexOfID] + "' isn't a number!")
                         return
-
+                    
                     try:
                         resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                             "chat_id": str(chat_id2),
@@ -407,6 +405,47 @@ class WebhookHandler(webapp2.RequestHandler):
                         reply("Error sending message to " + str(chat_id2) + "!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
                 else:
                     reply("You are not a Bot Admin!")
+            elif command == "runas":
+                if isBotAdmin():
+                    if not text.startswith("-"):
+                        text = "-" + text
+                    indexOfID = 0
+                    try:
+                        indexOfID = text.index(" ")
+                    except ValueError:
+                        reply("Space separating ID and text not found!")
+                        return
+                    
+                    if numeralconverter.is_number(text[:indexOfID]):
+                        chat_id = int(text[:indexOfID])
+                        text = text[indexOfID + 1:]
+                    else:
+                        reply("'" + text[:indexOfID] + "' isn't a number!")
+                        return
+                    
+                    # Clean end of text
+                    if text.lower().endswith("@walkmanbot"): text = text[:-11]
+                    if text.endswith(" "): text = text[:-1]
+                    # Seperate command and text
+                    if text.startswith("/") or text.startswith("#") or text.startswith("!"): text = text[1:]
+                    try:
+                        commandIndex = text.index(" ")
+                        command = text[:commandIndex]
+                        text = text[commandIndex + 1:]
+                        command = command.lower()
+                        if command.endswith("@walkmanbot"): command = command[:-11]
+                    except ValueError:
+                        command = ""
+                    # Clean start of text
+                    if text.startswith(" "): text = text[1:]
+                    if text.lower().startswith("@walkmanbot"): text = text[11:]
+                    if text.startswith(" "): text = text[1:]
+                    
+                    if command <> "":
+                        processCommands(command, text, chat_id)
+                    else:
+                        processCommands(text.lower(), "", chat_id)
+                    
             elif command in ["echo", "recho", "shout"] and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
