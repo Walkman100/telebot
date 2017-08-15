@@ -262,32 +262,13 @@ class WebhookHandler(webapp2.RequestHandler):
         if text.startswith(" "): text = text[1:]
         # COMMANDS BELOW
         def processCommands(command, text, chat_id):
-            # IGNORED
+            # Ignored Input
             if command in ["s", "r"]:
                 pass
             if command.startswith("r/"):
                 pass
-            elif command == "start":
-                reply("Use /help for commands")
-            elif command == "ucs":
-                if isBotAdmin() or isChatAdmin():
-                    if getUnknownCommandEnabled(chat_id):
-                        setUnknownCommandEnabled(chat_id, False)
-                        reply("unknown command messages disabled")
-                    else:
-                        setUnknownCommandEnabled(chat_id, True)
-                        reply("unknown command messages enabled")
-                else:
-                    reply("You are not an admin!")
-            elif command == "about":
-                reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
-            elif command == "info":
-                infoText = "*Telegram Command input info:* After typing `/`:"
-                infoText += "\nDesktop (Windows, Linux & Mac QT Client):\n- Use the arrow keys or your mouse to highlight a command"
-                infoText += "\n- Use `Tab` to insert it into the input box"
-                infoText += "\nMobile (Official Android Client & forks):\n- Scroll to a command"
-                infoText += "\n- Tap-and-hold on it to insert it into the input box"
-                reply(infoText)
+            
+            # Usage
             elif command == "help":
                 helpText = "*Available commands*"
                 helpText += "\n/about - Show version info"
@@ -313,15 +294,65 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
                 # helpText += "\n/"
                 send_message(helpText)
-            elif command == "image":
-                send_chat_action("upload_photo")
-                img = Image.new("RGB", (512, 512))
-                base = random.randint(0, 16777216)
-                pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
-                img.putdata(pixels)
-                output = StringIO.StringIO()
-                img.save(output, "JPEG")
-                reply(img=output.getvalue())
+            elif command in ["echo", "recho", "shout"] and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter text:")
+                else:
+                    reply("Usage: `/" + command + " <text>`")
+            elif command == "uecho" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter text to encode:")
+                else:
+                    reply("Usage: `/uecho <unicode sequence>`")
+            elif command == "curl" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter url:")
+                else:
+                    reply("Usage: `/curl <url>`")
+            elif command == "r2a" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter roman numerals:")
+                else:
+                    reply("Usage: `/r2a <roman numerals>`")
+            elif command == "a2r" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter arabic number:")
+                else:
+                    reply("Usage: `/a2r <arabic number>`")
+            elif command == "roll" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter <number of die>d<sides of die>:")
+                else:
+                    reply("Usage: `/roll <number of die>d<sides of die>`")
+            elif command == "calc" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter expression:")
+                else:
+                    reply("Usage: `/calc <expression>`")
+            
+            # Simple response (no computation)
+            elif command == "start":
+                reply("Use /help for commands")
+            elif command == "about":
+                reply("based on `telebot` created by yukuku ([source](https://github.com/yukuku/telebot)).\nThis version by @Walkman100 ([source](https://github.com/Walkman100/telebot))")
+            elif command == "info":
+                infoText = "*Telegram Command input info:* After typing `/`:"
+                infoText += "\nDesktop (Windows, Linux & Mac QT Client):\n- Use the arrow keys or your mouse to highlight a command"
+                infoText += "\n- Use `Tab` to insert it into the input box"
+                infoText += "\nMobile (Official Android Client & forks):\n- Scroll to a command"
+                infoText += "\n- Tap-and-hold on it to insert it into the input box"
+                reply(infoText)
+            elif command == "echo":
+                send_message(text)
+            
+            # No NDB Modification
             elif command == "whoami":
                 replystring = "You are <code>"
                 try:
@@ -357,12 +388,11 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply_html(replystring)
                 except urllib2.HTTPError, err:
                     reply("HTTPError: " + str(err))
-            elif command == "uecho" and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter text to encode:")
-                else:
-                    reply("Usage: `/uecho <unicode sequence>`")
+            elif command == "recho":
+                revTxt = ""
+                for letter in text:
+                    revTxt = letter + revTxt
+                send_message(revTxt)
             elif command == "uecho":
                 if text.count("\\") == 0: text = "\\" + text
                 try:
@@ -375,6 +405,90 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("ERROR: `" + str(err) + "`")
                 except:
                     reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+            elif command == "shout":
+                text = text.upper()
+                text = text[:20] # truncate text so message can't be ridiculously long
+                
+                shoutTxt = "<code>"
+                for letter in text:
+                    shoutTxt += letter + " "
+                
+                text = text[1:]
+                seperator = " "
+                for letter in text:
+                    shoutTxt += "\n" + letter + seperator + letter
+                    seperator += "  " # 3D-ness
+                shoutTxt = shoutTxt + "</code>"
+                
+                try:
+                    reply_html(shoutTxt)
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
+            elif command == "curl":
+                send_chat_action("upload_document")
+                try:
+                    back = urllib2.urlopen(text).read()
+                    reply("`" + back + "`")
+                except urllib2.HTTPError, err:
+                    reply("HTTPError: `" + str(err) + "`")
+                except urllib2.URLError, err:
+                    reply("URLError: `" + str(err) + "`")
+                except ValueError, err:
+                    reply("ValueError: `" + str(err) + "`")
+                except UnicodeDecodeError, err:
+                    reply("UnicodeDecodeError: `" + str(err) + "`")
+                except:
+                    reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
+            elif command == "r2a":
+                try:
+                    reply(numeralconverter.returnArabicNumber(text))
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`")
+            elif command == "a2r":
+                try:
+                    reply(numeralconverter.checkAndReturnRomanNumeral(text))
+                except urllib2.HTTPError, err:
+                    reply("ERROR: `" + str(err) + "`")
+            elif command == "roll":
+                sendText = ""
+                inputArgs = text.split("d")
+                
+                if len(inputArgs) <> 2:
+                    reply("`" + text + "` does not contain one `d`!")
+                    return
+                
+                if inputArgs[0] == "":
+                    inputArgs[0] = "1"
+                if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
+                    i = 0
+                    while i < int(inputArgs[0]):
+                        sendText += "\n" + str(random.randint(1, int(inputArgs[1])))
+                        i += 1
+                    reply(sendText)
+                else:
+                    reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
+            elif command == "randbetween":
+                #randbetween 5 10
+                inputArgs = text.split(" ")
+                
+                if len(inputArgs) <> 2:
+                    reply("`" + text + "` does not contain one space!")
+                    return
+                
+                if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
+                    try:
+                        reply(str(random.randint(int(inputArgs[0]), int(inputArgs[1]))))
+                    except ValueError, err:
+                        reply("ERROR: `" + str(err) + "`\n`random.randint()` doesn't seem to be able to go backwards " + u"\U0001f61e")
+                else:
+                    reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
+            elif command == "calc":
+                try:
+                    reply(str(eval(text)))
+                except:
+                    reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+            
+            # Admin commands
             elif command == "echoid":
                 if isBotAdmin():
                     indexOfID = 0
@@ -399,7 +513,7 @@ class WebhookHandler(webapp2.RequestHandler):
                             "parse_mode": "Markdown",
                             "disable_web_page_preview": "true",
                         })).read()
-
+                        
                         logging.info("send response: " + str(resp))
                     except:
                         reply("Error sending message to " + str(chat_id2) + "!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
@@ -445,132 +559,18 @@ class WebhookHandler(webapp2.RequestHandler):
                         processCommands(command, text, chat_id)
                     else:
                         processCommands(text.lower(), "", chat_id)
-                    
-            elif command in ["echo", "recho", "shout"] and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter text:")
+            
+            # NDB modifying
+            elif command == "ucs":
+                if isBotAdmin() or isChatAdmin():
+                    if getUnknownCommandEnabled(chat_id):
+                        setUnknownCommandEnabled(chat_id, False)
+                        reply("unknown command messages disabled")
+                    else:
+                        setUnknownCommandEnabled(chat_id, True)
+                        reply("unknown command messages enabled")
                 else:
-                    reply("Usage: `/" + command + " <text>`")
-            elif command == "echo":
-                send_message(text)
-            elif command == "recho":
-                revTxt = ""
-                for letter in text:
-                    revTxt = letter + revTxt
-                send_message(revTxt)
-            elif command == "shout":
-                text = text.upper()
-                text = text[:20] # truncate text so message can't be ridiculously long
-
-                shoutTxt = "<code>"
-                for letter in text:
-                    shoutTxt += letter + " "
-
-                text = text[1:]
-                seperator = " "
-                for letter in text:
-                    shoutTxt += "\n" + letter + seperator + letter
-                    seperator += "  " # 3D-ness
-                shoutTxt = shoutTxt + "</code>"
-
-                try:
-                    reply_html(shoutTxt)
-                except urllib2.HTTPError, err:
-                    reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
-            elif command == "curl" and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter url:")
-                else:
-                    reply("Usage: `/curl <url>`")
-            elif command == "curl":
-                send_chat_action("upload_document")
-                try:
-                    back = urllib2.urlopen(text).read()
-                    reply("`" + back + "`")
-                except urllib2.HTTPError, err:
-                    reply("HTTPError: `" + str(err) + "`")
-                except urllib2.URLError, err:
-                    reply("URLError: `" + str(err) + "`")
-                except ValueError, err:
-                    reply("ValueError: `" + str(err) + "`")
-                except UnicodeDecodeError, err:
-                    reply("UnicodeDecodeError: `" + str(err) + "`")
-                except:
-                    reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
-            elif command == "r2a" and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter roman numerals:")
-                else:
-                    reply("Usage: `/r2a <roman numerals>`")
-            elif command == "r2a":
-                try:
-                    reply(numeralconverter.returnArabicNumber(text))
-                except urllib2.HTTPError, err:
-                    reply("ERROR: `" + str(err) + "`")
-            elif command == "a2r" and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter arabic number:")
-                else:
-                    reply("Usage: `/a2r <arabic number>`")
-            elif command == "a2r":
-                try:
-                    reply(numeralconverter.checkAndReturnRomanNumeral(text))
-                except urllib2.HTTPError, err:
-                    reply("ERROR: `" + str(err) + "`")
-            elif command == "roll" and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter <number of die>d<sides of die>:")
-                else:
-                    reply("Usage: `/roll <number of die>d<sides of die>`")
-            elif command == "roll":
-                sendText = ""
-                inputArgs = text.split("d")
-
-                if len(inputArgs) <> 2:
-                    reply("`" + text + "` does not contain one `d`!")
-                    return
-
-                if inputArgs[0] == "":
-                    inputArgs[0] = "1"
-                if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
-                    i = 0
-                    while i < int(inputArgs[0]):
-                        sendText += "\n" + str(random.randint(1, int(inputArgs[1])))
-                        i += 1
-                    reply(sendText)
-                else:
-                    reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
-            elif command == "randbetween":
-                #randbetween 5 10
-                inputArgs = text.split(" ")
-
-                if len(inputArgs) <> 2:
-                    reply("`" + text + "` does not contain one space!")
-                    return
-
-                if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
-                    try:
-                        reply(str(random.randint(int(inputArgs[0]), int(inputArgs[1]))))
-                    except ValueError, err:
-                        reply("ERROR: `" + str(err) + "`\n`random.randint()` doesn't seem to be able to go backwards " + u"\U0001f61e")
-                else:
-                    reply("Either `" + inputArgs[0] + "` or `" + inputArgs[1] + "` isn't a number!")
-            elif command == "calc" and text == "":
-                if chat["type"] == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter expression:")
-                else:
-                    reply("Usage: `/calc <expression>`")
-            elif command == "calc":
-                try:
-                    reply(str(eval(text)))
-                except:
-                    reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+                    reply("You are not an admin!")
             elif command == "msgset":
                 setMessage(chat_id, text)
                 reply("Custom Message set to `" + text + "`")
@@ -629,6 +629,19 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply_html(text[1:])
                 else:
                     reply(text)
+            
+            # Media
+            elif command == "image":
+                send_chat_action("upload_photo")
+                img = Image.new("RGB", (512, 512))
+                base = random.randint(0, 16777216)
+                pixels = [base+i*j for i in range(512) for j in range(512)]  # generate sample image
+                img.putdata(pixels)
+                output = StringIO.StringIO()
+                img.save(output, "JPEG")
+                reply(img=output.getvalue())
+            
+            # Private Chat talk mode & unknown commands
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
                 processCommands(getLastAction(str(fr["id"])), command + " " + text, chat_id)
             elif getUnknownCommandEnabled(chat_id):
@@ -638,6 +651,9 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Unknown command `" + command + "`. Use /help to see existing commands")
         
         processCommands(command, text, chat_id)
+        
+        #except:
+            #reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
 
 app = webapp2.WSGIApplication([
     ("/me", MeHandler),
