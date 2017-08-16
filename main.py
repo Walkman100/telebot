@@ -283,6 +283,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n`/shout <text>` - Shout `text` in caps"
                 helpText += "\n/image - Send a 'randomly' generated image"
                 helpText += "\n`/getimg <url>` - Return an image at `url`"
+                helpText += "\n`/preview <url>` - Get a preview image of webpage `url` using pagepeeker.com"
                 helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
                 helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
                 helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
@@ -316,6 +317,12 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Enter image url:")
                 else:
                     reply("Usage: `/getimg <url>`")
+            elif command == "preview" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter page url:")
+                else:
+                    reply("Usage: `/preview <url>`")
             elif command == "curl" and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
@@ -671,6 +678,35 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("UnicodeDecodeError: `" + str(err) + "`")
                 except:
                     reply("Couldn't get/upload an image at `" + text + "`!\nErrorType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
+            elif command == "preview":
+                send_chat_action("upload_photo")
+                try:
+                    imgURL = "http://free.pagepeeker.com/v2/thumbs.php?size=x&url=" + text
+                    checkURL = "http://free.pagepeeker.com/v2/thumbs_ready.php?size=x&url=" + text
+                    
+                    jsonResp = json.loads(urllib2.urlopen(checkURL).read())
+                    
+                    if jsonResp.get("IsReady") == 1:
+                        reply(img=urllib2.urlopen(imgURL).read())
+                    elif jsonResp.get("IsReady") == 0:
+                        reply("Preview not generated yet. Please wait ~1min and try again")
+                    elif jsonResp.get("Error") <> None:
+                        reply("There was an error generating the preview: " + jsonResp.get("Error"))
+                    else:
+                        reply("`" + str(jsonResp) + "`")
+                    
+                except urllib2.HTTPError, err:
+                    reply("HTTPError: `" + str(err) + "`")
+                except urllib2.URLError, err:
+                    reply("URLError: `" + str(err) + "`")
+                except ValueError, err:
+                    reply_html(str(urllib2.urlopen(checkURL).read())[:-47] + "\n(<code>" + str(err) + "</code>)")
+                except TypeError, err:
+                    reply("TypeError: `" + str(err) + "`")
+                except UnicodeDecodeError, err:
+                    reply("UnicodeDecodeError: `" + str(err) + "`")
+                except:
+                    reply("Couldn't get/upload an image at `" + imgURL + "`!\nErrorType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             
             # Private Chat talk mode & unknown commands
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
