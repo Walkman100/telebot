@@ -128,14 +128,14 @@ class WebhookHandler(webapp2.RequestHandler):
         else:
             logging.info("received message: " + text + ", from " + fr["first_name"])
         
-        def reply(msg=None, img=None):
+        def reply(msg=None, img=None, disable_web_page_preview="true"):
             try:
                 if msg:
                     resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                         "chat_id": str(chat_id),
                         "text": msg.encode("utf-8"),
                         "parse_mode": "Markdown",
-                        "disable_web_page_preview": "true",
+                        "disable_web_page_preview": disable_web_page_preview,
                         "reply_to_message_id": str(message_id),
                     })).read()
                 elif img:
@@ -154,14 +154,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.info("Error responding with " + msg)
                 reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
-        def reply_html(msg=None, img=None): # exactly the same as reply() but parse it as html
+        def reply_html(msg=None, img=None, disable_web_page_preview="true"): # exactly the same as reply() but parse it as html
             try:
                 if msg:
                     resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                         "chat_id": str(chat_id),
                         "text": msg.encode("utf-8"),
                         "parse_mode": "HTML",
-                        "disable_web_page_preview": "true",
+                        "disable_web_page_preview": disable_web_page_preview,
                         "reply_to_message_id": str(message_id),
                     })).read()
                 elif img:
@@ -284,6 +284,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n/image - Send a 'randomly' generated image"
                 helpText += "\n`/getimg <url>` - Return an image at `url`"
                 helpText += "\n`/preview <url>` - Get a preview image of webpage `url` using pagepeeker.com"
+                helpText += "\n`/expand <url>` - Get expanded version of `<url>` using goo.gl/IGL1lE"
                 helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
                 helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
                 helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
@@ -323,6 +324,12 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Enter page url:")
                 else:
                     reply("Usage: `/preview <url>`")
+            elif command == "expand" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter short url:")
+                else:
+                    reply("Usage: `/expand <url>`")
             elif command == "curl" and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
@@ -447,6 +454,29 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply_html(shoutTxt)
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
+            elif command == "expand":
+                send_chat_action("typing")
+                try:
+                    jsonResp = json.loads(urllib2.urlopen("https://unshorten.me/json/" + text).read())
+                    
+                    if jsonResp.get("success") == True:
+                        reply_html(jsonResp.get("resolved_url"), disable_web_page_preview="false")
+                    elif jsonResp.get("success") == False:
+                        reply("There was an error expanding `" + jsonResp.get("requested_url") + "`: " + jsonResp.get("error"))
+                    else:
+                        reply("`" + str(jsonResp) + "`")
+                except urllib2.HTTPError, err:
+                    reply("HTTPError: `" + str(err) + "`")
+                except urllib2.URLError, err:
+                    reply("URLError: `" + str(err) + "`")
+                except ValueError, err:
+                    reply("ValueError: `" + str(err) + "`")
+                except TypeError, err:
+                    reply("TypeError: `" + str(err) + "`")
+                except UnicodeDecodeError, err:
+                    reply("UnicodeDecodeError: `" + str(err) + "`")
+                except:
+                    reply("Couldn't resolve `" + text + "`!\n`" + str(sys.exc_info()[1]) + "`")
             elif command == "curl":
                 send_chat_action("upload_document")
                 try:
