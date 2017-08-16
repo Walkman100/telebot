@@ -128,13 +128,13 @@ class WebhookHandler(webapp2.RequestHandler):
         else:
             logging.info("received message: " + text + ", from " + fr["first_name"])
         
-        def reply(msg=None, img=None, disable_web_page_preview="true"):
+        def reply(msg=None, img=None, parse_mode="Markdown", disable_web_page_preview="true"):
             try:
                 if msg:
                     resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                         "chat_id": str(chat_id),
                         "text": msg.encode("utf-8"),
-                        "parse_mode": "Markdown",
+                        "parse_mode": parse_mode,
                         "disable_web_page_preview": disable_web_page_preview,
                         "reply_to_message_id": str(message_id),
                     })).read()
@@ -154,39 +154,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 logging.info("Error responding with " + msg)
                 reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
         
-        def reply_html(msg=None, img=None, disable_web_page_preview="true"): # exactly the same as reply() but parse it as html
+        def reply_noreply(msg=None, img=None, parse_mode="Markdown", disable_web_page_preview="true"): # exactly the same as reply() but no reply_to_message_id parameter
             try:
                 if msg:
                     resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
                         "chat_id": str(chat_id),
                         "text": msg.encode("utf-8"),
-                        "parse_mode": "HTML",
+                        "parse_mode": parse_mode,
                         "disable_web_page_preview": disable_web_page_preview,
-                        "reply_to_message_id": str(message_id),
-                    })).read()
-                elif img:
-                    resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
-                        ("chat_id", str(chat_id)),
-                    ], [
-                        ("photo", "image.jpg", img),
-                    ])
-                else:
-                    logging.error("no msg or img specified")
-                    resp = None
-
-                logging.info("send response: " + str(resp))
-            except:
-                logging.info("Error responding with " + msg)
-                reply("Error responding!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
-        
-        def send_message(msg=None, img=None): # exactly the same as reply() but no reply_to_message_id parameter
-            try:
-                if msg:
-                    resp = urllib2.urlopen(BASE_URL + "sendMessage", urllib.urlencode({
-                        "chat_id": str(chat_id),
-                        "text": msg.encode("utf-8"),
-                        "parse_mode": "Markdown",
-                        "disable_web_page_preview": "true",
                     })).read()
                 elif img:
                     resp = multipart.post_multipart(BASE_URL + "sendPhoto", [
@@ -299,7 +274,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n/msg <text> - send the custom message with `text` on the end, start with " + u'\xa7' + " for HTML instead of markdown"
                 helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
                 # helpText += "\n/"
-                send_message(helpText)
+                reply_noreply(helpText)
             elif command in ["echo", "recho", "shout"] and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
@@ -380,7 +355,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 infoText += "\n- Tap-and-hold on it to insert it into the input box"
                 reply(infoText)
             elif command == "echo":
-                send_message(text)
+                reply_noreply(text)
             
             # No NDB Modification
             elif command == "whoami":
@@ -415,18 +390,18 @@ class WebhookHandler(webapp2.RequestHandler):
                     replystring += " You are a Chat Admin."
                 
                 try:
-                    reply_html(replystring)
+                    reply(replystring, parse_mode="HTML")
                 except urllib2.HTTPError, err:
                     reply("HTTPError: " + str(err))
             elif command == "recho":
                 revTxt = ""
                 for letter in text:
                     revTxt = letter + revTxt
-                send_message(revTxt)
+                reply_noreply(revTxt)
             elif command == "uecho":
                 if text.count("\\") == 0: text = "\\" + text
                 try:
-                    send_message(text.decode("unicode-escape"))
+                    reply_noreply(text.decode("unicode-escape"))
                 except UnicodeEncodeError, err:
                     reply("ERROR: `" + str(err) + "`\n\nDon't use unicode! (But this message can be used to find the sequence of unicode characters)")
                 except UnicodeDecodeError, err:
@@ -451,7 +426,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 shoutTxt = shoutTxt + "</code>"
                 
                 try:
-                    reply_html(shoutTxt)
+                    reply(shoutTxt, parse_mode="HTML")
                 except urllib2.HTTPError, err:
                     reply("ERROR: `" + str(err) + "`\n\nSorry no <tags> " + u"\U0001f61e")
             elif command == "expand":
@@ -460,7 +435,7 @@ class WebhookHandler(webapp2.RequestHandler):
                     jsonResp = json.loads(urllib2.urlopen("https://unshorten.me/json/" + text).read())
                     
                     if jsonResp.get("success") == True:
-                        reply_html(jsonResp.get("resolved_url"), disable_web_page_preview="false")
+                        reply(jsonResp.get("resolved_url"), parse_mode="HTML", disable_web_page_preview="false")
                     elif jsonResp.get("success") == False:
                         reply("There was an error expanding `" + jsonResp.get("requested_url") + "`: " + jsonResp.get("error"))
                     else:
@@ -667,7 +642,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 if text == "":
                     reply("Custom message hasn't been set, use `/msgset <text>` to set it")
                 elif text.startswith(u'\xa7'):
-                    reply_html(text[1:]) # [1:] is to remove the §
+                    reply(text[1:], parse_mode="HTML") # [1:] is to remove the §
                 else:
                     reply(text)
             elif command == "mymsg":
@@ -678,7 +653,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 if text == "":
                     reply("Custom message hasn't been set, use `/msgset <text>` in private chat (@WalkmanBot) to set it")
                 elif text.startswith(u'\xa7'):
-                    reply_html(text[1:])
+                    reply(text[1:], parse_mode="HTML")
                 else:
                     reply(text)
             
@@ -730,7 +705,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 except urllib2.URLError, err:
                     reply("URLError: `" + str(err) + "`")
                 except ValueError, err:
-                    reply_html(str(urllib2.urlopen(checkURL).read())[:-47] + "\n(<code>" + str(err) + "</code>)")
+                    reply(str(urllib2.urlopen(checkURL).read())[:-47] + "\n(<code>" + str(err) + "</code>)", parse_mode="HTML")
                 except TypeError, err:
                     reply("TypeError: `" + str(err) + "`")
                 except UnicodeDecodeError, err:
