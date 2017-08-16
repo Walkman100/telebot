@@ -277,11 +277,12 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n/about - Show version info"
                 helpText += "\n/help - Show this help"
                 helpText += "\n/whoAmI - Get ID's and info about the user"
-                helpText += "\n/image - Send a 'randomly' generated image"
                 helpText += "\n`/echo <text>` - Respond with `text`, supports markdown"
                 helpText += "\n`/recho <text>` - Respond with `text` reversed"
                 helpText += "\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211"
                 helpText += "\n`/shout <text>` - Shout `text` in caps"
+                helpText += "\n/image - Send a 'randomly' generated image"
+                helpText += "\n`/getimg <url>` - Return an image at `url`"
                 helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
                 helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
                 helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
@@ -309,6 +310,12 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Enter text to encode:")
                 else:
                     reply("Usage: `/uecho <unicode sequence>`")
+            elif command == "getimg" and text == "":
+                if chat["type"] == "private":
+                    setLastAction(str(fr["id"]), command)
+                    reply("Enter image url:")
+                else:
+                    reply("Usage: `/getimg <url>`")
             elif command == "curl" and text == "":
                 if chat["type"] == "private":
                     setLastAction(str(fr["id"]), command)
@@ -578,7 +585,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         setUnknownCommandEnabled(chat_id, True)
                         reply("unknown command messages enabled")
                 else:
-                    reply("You are not an admin!")
+                    reply("You are not a bot or chat admin!")
             elif command == "msgset":
                 setMessage(chat_id, text)
                 reply("Custom Message set to `" + text + "`")
@@ -648,6 +655,22 @@ class WebhookHandler(webapp2.RequestHandler):
                 output = StringIO.StringIO()
                 img.save(output, "JPEG")
                 reply(img=output.getvalue())
+            elif command == "getimg":
+                send_chat_action("upload_photo")
+                try:
+                    reply(img=urllib2.urlopen(text).read())
+                except urllib2.HTTPError, err:
+                    reply("HTTPError: `" + str(err) + "`")
+                except urllib2.URLError, err:
+                    reply("URLError: `" + str(err) + "`")
+                except ValueError, err:
+                    reply("ValueError: `" + str(err) + "`")
+                except TypeError, err:
+                    reply("TypeError: `" + str(err) + "`")
+                except UnicodeDecodeError, err:
+                    reply("UnicodeDecodeError: `" + str(err) + "`")
+                except:
+                    reply("Couldn't get/upload an image at `" + text + "`!\nErrorType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             
             # Private Chat talk mode & unknown commands
             elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
