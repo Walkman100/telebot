@@ -36,7 +36,7 @@ class MessageList(ndb.Model):
     # TextProperty is "unlimited length" (https://cloud.google.com/appengine/docs/python/ndb/properties#types)
 
 class LastActionList(ndb.Model):
-    # key name: str(fr["id"])
+    # key name: str(fr.get("id"))
     lastAction = ndb.StringProperty(indexed=False, default="none")
 
 # ================================
@@ -100,33 +100,26 @@ class WebhookHandler(webapp2.RequestHandler):
     def post(self):
         urlfetch.set_default_fetch_deadline(60)
         body = json.loads(self.request.body)
+        
         logging.info("request body: " + str(body))
         self.response.write(json.dumps(body))
+        update_id = body.get("update_id")
+        message   = body.get("message")
+        if not message: message = body.get("edited_message")
+        if not message: return
         
-        update_id = body["update_id"]
-        try:
-            message = body["message"]
-        except:
-            try:
-                message = body["edited_message"]
-            except: # empty edits
-                return
         message_id = message.get("message_id")
-        date = message.get("date")
-        text = message.get("text")
-        fr = message.get("from")
-        chat = message["chat"]
-        chat_id = chat["id"]
-        
+        date       = message.get("date")
+        fr         = message.get("from")
+        chat       = message.get("chat")
+        chat_id    =    chat.get("id")
+        text       = message.get("text")
+        if not text: text = message.get("caption")
         if not text:
-            try:
-                text = message.get("caption")
-                logging.info("received message: " + text + ", from " + fr["first_name"])
-            except:
-                logging.info("no text")
-                return
+            logging.info("no text")
+            return
         else:
-            logging.info("received message: " + text + ", from " + fr["first_name"])
+            logging.info("received message: " + text + ", from " + fr.get("first_name"))
         
         def reply(msg=None, img=None, parse_mode="Markdown", disable_web_page_preview="true"):
             try:
@@ -191,10 +184,10 @@ class WebhookHandler(webapp2.RequestHandler):
                 "chat_id": str(chat_id)
             })).read()
             
-            return json.loads(resp)["result"]
+            return json.loads(resp).get("result")
         
         def isChatAdmin():
-            if chat["type"] == "private":
+            if chat.get("type") == "private":
                 return True
             
             chatAdmins = get_chat_administrators()
@@ -206,13 +199,13 @@ class WebhookHandler(webapp2.RequestHandler):
                     i += 1
             except:
                 pass
-            if fr["id"] in AdminIDs:
+            if fr.get("id") in AdminIDs:
                 return True
             return False
         
         botAdmins = [61311478, 83416231]
         def isBotAdmin():
-            if fr["id"] in botAdmins:
+            if fr.get("id") in botAdmins:
                 return True
             return False
         
@@ -276,67 +269,67 @@ class WebhookHandler(webapp2.RequestHandler):
                 # helpText += "\n/"
                 reply_noreply(helpText)
             elif command in ["echo", "recho", "shout"] and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter text:")
                 else:
                     reply("Usage: `/" + command + " <text>`")
             elif command == "uecho" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter text to encode:")
                 else:
                     reply("Usage: `/uecho <unicode sequence>`")
             elif command == "getimg" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter image url:")
                 else:
                     reply("Usage: `/getimg <url>`")
             elif command == "preview" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter page url:")
                 else:
                     reply("Usage: `/preview <url>`")
             elif command == "expand" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter short url:")
                 else:
                     reply("Usage: `/expand <url>`")
             elif command == "curl" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter url:")
                 else:
                     reply("Usage: `/curl <url>`")
             elif command == "r2a" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter roman numerals:")
                 else:
                     reply("Usage: `/r2a <roman numerals>`")
             elif command == "a2r" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter arabic number:")
                 else:
                     reply("Usage: `/a2r <arabic number>`")
             elif command == "roll" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter <number of die>d<sides of die>:")
                 else:
                     reply("Usage: `/roll <number of die>d<sides of die>`")
             elif command == "randbetween" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter <start> <end>:")
                 else:
                     reply("Usage: `/randbetween <start> <end>`")
             elif command == "calc" and text == "":
-                if chat["type"] == "private":
+                if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
                     reply("Enter expression:")
                 else:
@@ -375,7 +368,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 except KeyError:
                     pass
                 
-                replystring += "with an ID of <code>" + str(fr["id"]) + "</code>, chatting in a " + chat["type"]
+                replystring += "with an ID of <code>" + str(fr.get("id")) + "</code>, chatting in a " + str(chat.get("type"))
                 try:
                     replystring += " chat called <code>" + chat["title"] + "</code> "
                 except KeyError:
@@ -714,8 +707,8 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Couldn't get/upload an image at `" + imgURL + "`!\nErrorType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
             
             # Private Chat talk mode & unknown commands
-            elif chat["type"] == "private" and getLastAction(str(fr["id"])) <> "none":
-                processCommands(getLastAction(str(fr["id"])), command + " " + text, chat_id)
+            elif chat.get("type") == "private" and getLastAction(str(fr.get("id"))) <> "none":
+                processCommands( getLastAction(str(fr.get("id"))), command + " " + text, chat_id )
             elif getUnknownCommandEnabled(chat_id):
                 if "fuck off" in (command + " " + text).lower() or "shut the fuck up" in (command + " " + text).lower():
                     reply("Use /ucs to turn off Unknown Command messages")
