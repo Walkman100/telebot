@@ -97,6 +97,31 @@ class SetWebhookHandler(webapp2.RequestHandler):
 
 
 class WebhookHandler(webapp2.RequestHandler):
+    def generateCommandDict(self):
+        commandDict = []
+        #keys = ['command', 'arguments', 'usage', clickable=False, 'moreinfo', has_chat_mode=False, 'chat_mode_prompt']
+        
+        commandDict.append({"command":"about", "usage":"Show version info"})
+        commandDict.append({"command":"help", "arguments":"<command>", "usage":"Show this help, or show help for <command>", "clickable": True})
+        commandDict.append({"command":"whoAmI", "usage":"Get ID's and info about the user"})
+        commandDict.append({"command":"echo", "arguments":"<text>", "usage":"Respond with `text`",  "moreinfo":"Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics.", "has_chat_mode":True, "chat_mode_prompt":"text:"})
+        commandDict.append({"command":"recho", "arguments":"<text>", "usage":"Respond with `text` reversed", "moreinfo":"Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics.", "has_chat_mode":True, "chat_mode_prompt":"text:"})
+        commandDict.append({"command":"uecho", "arguments":"<text>", "usage":"Respond with `text` encoded with Unicode", "moreinfo":"Format is \u2211 (or u2211 for a single character). Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics. Sending a unicode character results in an error, but can be used to find the sequence of unicode characters.", "has_chat_mode":True, "chat_mode_prompt":"text to encode:"})
+        commandDict.append({"command":"shout", "arguments":"<text>", "usage":"Shout `text` in caps", "moreinfo":"Sends a '3D' message of the input in caps, i.e. the input is sent across, down and diagonally. Do not use <> characters as the message is sent with HTML.", "has_chat_mode":True, "chat_mode_prompt":"text:"})
+        commandDict.append({"command":"image", "usage":"Send a 'randomly' generated image"})
+        commandDict.append({"command":"getimg", "arguments":"<url>", "usage":"Return an image at `url`", "moreinfo":"This is retrieved with python2's urllib2.urlopen method, and seems to have a problem with ~10MB or bigger images.", "has_chat_mode":True, "chat_mode_prompt":"image url:"})
+        commandDict.append({"command":"preview", "arguments":"<url>", "usage":"Get a preview image of webpage `url`", "moreinfo":"Generated using pagepeeker.com, which requires you request the image to be generated, then send a second request once it has been generated in order to get the image.", "has_chat_mode":True, "chat_mode_prompt":"page url:"})
+        commandDict.append({"command":"expand", "arguments":"<url>", "usage":"Get expanded version of `<url>` using goo.gl/IGL1lE", "moreinfo":"unshorten.me doesn't take anything after a ? through the API, go to the service directly in order to expand those URLs.", "has_chat_mode":True, "chat_mode_prompt":"short url:"})
+        commandDict.append({"command":"curl", "arguments":"<url>", "usage":"Return contents of `url` (Warning: reply could be very long!)", "moreinfo":"Most errors occur from unicode characters in the source.", "has_chat_mode":True, "chat_mode_prompt":"url:"})
+        commandDict.append({"command":"r2a", "arguments":"<roman numerals>", "usage":"Convert Roman Numerals to Arabic numbers", "has_chat_mode":True, "chat_mode_prompt":"roman numerals:"})
+        commandDict.append({"command":"a2r", "arguments":"<arabic number>", "usage":"Convert Arabic numbers to Roman Numerals", "has_chat_mode":True, "chat_mode_prompt":"arabic number:"})
+        commandDict.append({"command":"roll", "arguments":"<number of die>d<sides of die>", "usage":"Return `number of die` amount of random numbers from 1 to `sides of die`", "moreinfo":"Accepts input as d<sides of die> to roll 1 die", "has_chat_mode":True, "chat_mode_prompt":"<number of die>d<sides of die>:"})
+        commandDict.append({"command":"randbetween", "arguments":"<start> <end>", "usage":"Sends a random number between `start` and `end`", "moreinfo":"Entering numbers in reverse order errors (e.g. 50 20). Solution: enter numbers the other way around.", "has_chat_mode":True, "chat_mode_prompt":"<start> <end>:"})
+        commandDict.append({"command":"calc", "arguments":"<expression>", "usage":"evaluates `expression`", "moreinfo":"You can use this function to call random functions in the bots code, see the last link in /about, e.g. `/calc (str(reply_noreply('1')) + str(reply_noreply('2')) + str(reply_noreply('3')) + str(reply_noreply('4')) + str(reply_noreply('5')))[20:] + '6'`", "has_chat_mode":True, "chat_mode_prompt":"expression:"})
+        #commandDict.append({"command":"", "arguments":"", "usage":"", "moreinfo":"", "has_chat_mode":True, "chat_mode_prompt":""})
+        
+        return commandDict
+    
     def post(self):
         urlfetch.set_default_fetch_deadline(60)
         body = json.loads(self.request.body)
@@ -334,6 +359,30 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Enter expression:")
                 else:
                     reply("Usage: `/calc <expression>`")
+            
+            # commandDict-ed
+            elif command == "help2":
+                helpText = "*Available commands*"
+                # apparently because it's not global it needs to be called explicitly
+                # http://i0.kym-cdn.com/photos/images/newsfeed/000/187/270/1318822944910.jpg
+                for command in WebhookHandler(self).generateCommandDict():
+                    helpText += "\n"
+                    if command.get("arguments"):
+                        if command.get("clickable") == True:
+                            helpText += "/" + command.get("command") +" "+ command.get("arguments") + " - " + command.get("usage")
+                        else:
+                            helpText += "`/" + command.get("command") +" "+ command.get("arguments") + "` - " + command.get("usage")
+                    else:
+                        helpText += "/" + command.get("command") + " - " + command.get("usage")
+                
+                helpText += "\n\n*Custom Message*"
+                helpText += "\n`/msgset <text>` - sets the custom message to `text`"
+                helpText += "\n`/msgadd <text>` - adds `text` to the end"
+                helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
+                helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
+                helpText += "\n/msg <text> - send the custom message with `text` on the end, start with " + u'\xa7' + " for HTML instead of markdown"
+                helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
+                reply_noreply(helpText)
             
             # Simple response (no computation)
             elif command == "start":
