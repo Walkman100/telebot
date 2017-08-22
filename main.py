@@ -118,7 +118,7 @@ class WebhookHandler(webapp2.RequestHandler):
             "moreinfo":"This is retrieved with python2's urllib2.urlopen method, and seems to have a problem with ~10MB or bigger images."})
         commandDict.append({"command":"preview", "arguments":"<url>", "usage":"Get a preview image of webpage `url`", "has_chat_mode":True, "chat_mode_prompt":"page url:", \
             "moreinfo":"Generated using pagepeeker.com, which requires you request the image to be generated, then send a second request once it has been generated in order to get the image."})
-        commandDict.append({"command":"expand", "arguments":"<url>", "usage":"Get expanded version of `<url>` using goo.gl/IGL1lE", "has_chat_mode":True, "chat_mode_prompt":"short url:", \
+        commandDict.append({"command":"expand", "arguments":"<url>", "usage":"Get expanded version of `url` using goo.gl/IGL1lE", "has_chat_mode":True, "chat_mode_prompt":"short url:", \
             "moreinfo":"unshorten.me doesn't take anything after a ? through the API, go to the service directly in order to expand those URLs."})
         commandDict.append({"command":"curl", "arguments":"<url>", "usage":"Return contents of `url` (Warning: reply could be very long!)", "has_chat_mode":True, "chat_mode_prompt":"url:", \
             "moreinfo":"Most errors occur from unicode characters in the source."})
@@ -322,6 +322,20 @@ class WebhookHandler(webapp2.RequestHandler):
                         reply(text)
                         return
                 reply("Command `" + text + "` not found!")
+            elif command == "generatecommandlist":
+                text = "info - Quick Command info: On Mobile, scroll to a command and Tap-and-Hold to insert. On Desktop, use the arrow keys to highlight a command and Tab to insert."
+                for command in WebhookHandler(self).generateCommandDict():
+                    text += "\n"
+                    if command.get("command") == "help":
+                        text += "help - <command> - Show available commands, or show help for <command>"
+                        continue
+                    
+                    if command.get("arguments"):
+                        text += command.get("command").lower() + " - " + command.get("arguments") + " - " + command.get("usage")
+                    else:
+                        text += command.get("command").lower() + " - " + command.get("usage")
+                text += "\nmsg - <text> - send the custom message with <text> on the end\nmymsg - <text> - send the custom message set in private chat with <text> on the end\nmsgset - <text> - sets the custom message to <text>\nmsgadd - <text> - adds <text> to the end\nmsginsert - <index> <text> - inserts <text> at the specified <index>\nmsgremove - <count> - removes <count> characters from the end"
+                reply(text)
             elif command in ["echo", "recho", "shout"] and text == "":
                 if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
