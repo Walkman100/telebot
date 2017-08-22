@@ -100,7 +100,7 @@ class WebhookHandler(webapp2.RequestHandler):
     def generateCommandDict(self):
         commandDict = []
         #keys = ['command', 'arguments', 'usage', clickable=False, 'moreinfo', has_chat_mode=False, 'chat_mode_prompt']
-        
+        # thanks to https://bytes.com/topic/python/answers/781432-how-create-list-dictionaries
         commandDict.append({"command":"about", "usage":"Show version info"})
         commandDict.append({"command":"help", "arguments":"<command>", "usage":"Show this help, or show help for <command>", "clickable": True})
         commandDict.append({"command":"whoAmI", "usage":"Get ID's and info about the user"})
@@ -265,25 +265,20 @@ class WebhookHandler(webapp2.RequestHandler):
                 pass
             
             # Usage
-            elif command == "help":
+            elif command == "help" and text =="":
                 helpText = "*Available commands*"
-                helpText += "\n/about - Show version info"
-                helpText += "\n/help - Show this help"
-                helpText += "\n/whoAmI - Get ID's and info about the user"
-                helpText += "\n`/echo <text>` - Respond with `text`, supports markdown"
-                helpText += "\n`/recho <text>` - Respond with `text` reversed"
-                helpText += "\n`/uecho <text>` - Respond with `text` encoded with Unicode, format is \u2211"
-                helpText += "\n`/shout <text>` - Shout `text` in caps"
-                helpText += "\n/image - Send a 'randomly' generated image"
-                helpText += "\n`/getimg <url>` - Return an image at `url`"
-                helpText += "\n`/preview <url>` - Get a preview image of webpage `url` using pagepeeker.com"
-                helpText += "\n`/expand <url>` - Get expanded version of `<url>` using goo.gl/IGL1lE"
-                helpText += "\n`/curl <url>` - Return the contents of `url` (Warning: reply could be very long!)"
-                helpText += "\n`/r2a <roman numerals>` - Convert Roman Numerals to Arabic numbers"
-                helpText += "\n`/a2r <arabic number>` - Convert Arabic numbers to Roman Numerals"
-                helpText += "\n`/roll <number of die>d<sides of die>` - Return `number of die` amount of random numbers from 1 to `sides of die`"
-                helpText += "\n`/randbetween <start> <end>` - Sends a random number between `start` and `end`"
-                helpText += "\n`/calc <expression>` - evaluates `expression`"
+                # apparently because it's not global it needs to be called explicitly
+                # http://i0.kym-cdn.com/photos/images/newsfeed/000/187/270/1318822944910.jpg
+                for command in WebhookHandler(self).generateCommandDict():
+                    helpText += "\n"
+                    if command.get("arguments"):
+                        if command.get("clickable") == True:
+                            helpText += "/" + command.get("command") +" "+ command.get("arguments") + " - " + command.get("usage")
+                        else:
+                            helpText += "`/" + command.get("command") +" "+ command.get("arguments") + "` - " + command.get("usage")
+                    else:
+                        helpText += "/" + command.get("command") + " - " + command.get("usage")
+                
                 helpText += "\n\n*Custom Message*"
                 helpText += "\n`/msgset <text>` - sets the custom message to `text`"
                 helpText += "\n`/msgadd <text>` - adds `text` to the end"
@@ -293,6 +288,26 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
                 # helpText += "\n/"
                 reply_noreply(helpText)
+            elif command == "help":
+                for command in WebhookHandler(self).generateCommandDict():
+                    if text == command.get("command"):
+                        text = "Usage: "
+                        
+                        if command.get("arguments"):
+                            if command.get("clickable") == True:
+                                text += "/" + command.get("command") +" "+ command.get("arguments")
+                            else:
+                                text += "`/" + command.get("command") +" "+ command.get("arguments") + "`"
+                        else:
+                            text += "/" + command.get("command")
+                        
+                        text += " - " + command.get("usage")
+                        if command.get("moreinfo"):
+                            text += "\n\n" + command.get("moreinfo")
+                        
+                        reply(text)
+                        return
+                reply("Command `" + text + "` not found!")
             elif command in ["echo", "recho", "shout"] and text == "":
                 if chat.get("type") == "private":
                     setLastAction(str(fr["id"]), command)
@@ -359,30 +374,6 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Enter expression:")
                 else:
                     reply("Usage: `/calc <expression>`")
-            
-            # commandDict-ed
-            elif command == "help2":
-                helpText = "*Available commands*"
-                # apparently because it's not global it needs to be called explicitly
-                # http://i0.kym-cdn.com/photos/images/newsfeed/000/187/270/1318822944910.jpg
-                for command in WebhookHandler(self).generateCommandDict():
-                    helpText += "\n"
-                    if command.get("arguments"):
-                        if command.get("clickable") == True:
-                            helpText += "/" + command.get("command") +" "+ command.get("arguments") + " - " + command.get("usage")
-                        else:
-                            helpText += "`/" + command.get("command") +" "+ command.get("arguments") + "` - " + command.get("usage")
-                    else:
-                        helpText += "/" + command.get("command") + " - " + command.get("usage")
-                
-                helpText += "\n\n*Custom Message*"
-                helpText += "\n`/msgset <text>` - sets the custom message to `text`"
-                helpText += "\n`/msgadd <text>` - adds `text` to the end"
-                helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
-                helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
-                helpText += "\n/msg <text> - send the custom message with `text` on the end, start with " + u'\xa7' + " for HTML instead of markdown"
-                helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
-                reply_noreply(helpText)
             
             # Simple response (no computation)
             elif command == "start":
