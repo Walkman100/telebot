@@ -102,17 +102,20 @@ class WebhookHandler(webapp2.RequestHandler):
         #keys = ['command', 'arguments', 'usage', clickable=False, has_chat_mode=False, 'chat_mode_prompt', \
         #    'moreinfo']
         # thanks to https://bytes.com/topic/python/answers/781432-how-create-list-dictionaries
+        markdownInfoString = "Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics. " + \
+                             "See this [GroupButler post](https://telegram.me/GroupButler_ch/46) for full description."
+        
         commandDict.append({"command":"about", "usage":"Show version info"})
         commandDict.append({"command":"help", "arguments":"<command>", "usage":"Show this help, or show help for <command>", "clickable": True})
         commandDict.append({"command":"whoAmI", "usage":"Get ID's and info about the user"})
         commandDict.append({"command":"echo", "arguments":"<text>", "usage":"Respond with `text`",  "has_chat_mode":True, "chat_mode_prompt":"text:", \
-            "moreinfo":"Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics."})
+            "moreinfo": markdownInfoString})
         commandDict.append({"command":"recho", "arguments":"<text>", "usage":"Respond with `text` reversed", "has_chat_mode":True, "chat_mode_prompt":"text:", \
-            "moreinfo":"Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics."})
+            "moreinfo": markdownInfoString})
         commandDict.append({"command":"uecho", "arguments":"<text>", "usage":"Respond with `text` encoded with Unicode", "has_chat_mode":True, "chat_mode_prompt":"text to encode:", \
-            "moreinfo":"Format is \u2211 (or u2211 for a single character). Supports Telegram's limited version of Markdown, e.g. stars for bold and underscores for italics. Sending a unicode character results in an error, but can be used to find the sequence of unicode characters."})
+            "moreinfo":"Format is \u2211 (or u2211 for a single character). " + markdownInfoString + " Sending a unicode character results in an error, but can be used to find the sequence of unicode characters."})
         commandDict.append({"command":"shout", "arguments":"<text>", "usage":"Shout `text` in caps", "has_chat_mode":True, "chat_mode_prompt":"text:", \
-            "moreinfo":"Sends a '3D' message of the input in caps, i.e. the input is sent across, down and diagonally. Do not use <> characters as the message is sent with HTML."})
+            "moreinfo":"Sends a '3D' message of the input in caps, i.e. the input is sent across, down and diagonally. Do not use <> characters as the message is sent with HTML markup."})
         commandDict.append({"command":"image", "usage":"Send a 'randomly' generated image"})
         commandDict.append({"command":"getimg", "arguments":"<url>", "usage":"Return an image at `url`", "has_chat_mode":True, "chat_mode_prompt":"image url:", \
             "moreinfo":"This is retrieved with python2's urllib2.urlopen method, and seems to have a problem with ~10MB or bigger images."})
@@ -127,7 +130,7 @@ class WebhookHandler(webapp2.RequestHandler):
         commandDict.append({"command":"roll", "arguments":"<number of die>d<sides of die>", "usage":"Return `number of die` amount of random numbers from 1 to `sides of die`", "has_chat_mode":True, "chat_mode_prompt":"<number of die>d<sides of die>:", \
             "moreinfo":"Accepts input as d<sides of die> to roll 1 die"})
         commandDict.append({"command":"randbetween", "arguments":"<start> <end>", "usage":"Sends a random number between `start` and `end`", "has_chat_mode":True, "chat_mode_prompt":"<start> <end>:", \
-            "moreinfo":"Entering numbers in reverse order errors (e.g. 50 20). Solution: enter numbers the other way around."})
+            "moreinfo":"Entering numbers in reverse order errors (e.g. 50 20). Solution is to enter numbers the other way around."})
         commandDict.append({"command":"calc", "arguments":"<expression>", "usage":"evaluates `expression`", "has_chat_mode":True, "chat_mode_prompt":"expression:", \
             "moreinfo":"Since the bot runs python, this uses python operators to run calculations, in the form of `<number> <operator> <number>` - operators can be any of +/-/\*, and also:\n" + \
             "Divide (true): /\nDivide (floor): //\nModulus Division: %\nExponent: \*\*\nConcatenation: +\n" + \
@@ -784,9 +787,6 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("Unknown command `" + command + "`. Use /help to see existing commands")
         
         processCommands(command, text, chat_id)
-        
-        #except:
-            #reply("Caught error!\nType: `" + str(sys.exc_info()[0]) + "`\nValue: `" + str(sys.exc_info()[1]) + "`")
 
 app = webapp2.WSGIApplication([
     ("/me", MeHandler),
