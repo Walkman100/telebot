@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/usr/bin/env bash
 python2.7 main.py
 echo
 read -n1 -r -p "If output says \"ImportError: No module named appengine.api\" then press Enter or Space... " CONDITION;
