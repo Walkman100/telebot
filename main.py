@@ -221,7 +221,7 @@ class WebhookHandler(webapp2.RequestHandler):
             
             logging.info("send_chat_action response: " + str(resp))
         
-        def get_chat_administrators():
+        def get_chat_administrators(): # https://core.telegram.org/bots/api#getchatadministrators
             resp = urllib2.urlopen(BASE_URL + "getChatAdministrators", urllib.urlencode({
                 "chat_id": str(chat_id)
             })).read()
@@ -286,15 +286,15 @@ class WebhookHandler(webapp2.RequestHandler):
                 helpText = "*Available commands*"
                 # apparently because it's not global it needs to be called explicitly
                 # http://i0.kym-cdn.com/photos/images/newsfeed/000/187/270/1318822944910.jpg
-                for command in WebhookHandler(self).generateCommandDict():
+                for cmd in WebhookHandler(self).generateCommandDict():
                     helpText += "\n"
-                    if command.get("arguments"):
-                        if command.get("clickable") == True:
-                            helpText += "/" + command.get("command") +" "+ command.get("arguments") + " - " + command.get("usage")
+                    if cmd.get("arguments"):
+                        if cmd.get("clickable") == True:
+                            helpText += "/" + cmd.get("command") +" "+ cmd.get("arguments") + " - " + cmd.get("usage")
                         else:
-                            helpText += "`/" + command.get("command") +" "+ command.get("arguments") + "` - " + command.get("usage")
+                            helpText += "`/" + cmd.get("command") +" "+ cmd.get("arguments") + "` - " + cmd.get("usage")
                     else:
-                        helpText += "/" + command.get("command") + " - " + command.get("usage")
+                        helpText += "/" + cmd.get("command") + " - " + cmd.get("usage")
                 
                 helpText += "\n\n*Custom Message*"
                 helpText += "\n`/msgset <text>` - sets the custom message to `text`"
@@ -306,37 +306,37 @@ class WebhookHandler(webapp2.RequestHandler):
                 # helpText += "\n/"
                 reply_noreply(helpText)
             elif command == "help":
-                for command in WebhookHandler(self).generateCommandDict():
-                    if text == command.get("command"):
+                for cmd in WebhookHandler(self).generateCommandDict():
+                    if text == cmd.get("command"):
                         text = "Usage: "
                         
-                        if command.get("arguments"):
-                            if command.get("clickable") == True:
-                                text += "/" + command.get("command") +" "+ command.get("arguments")
+                        if cmd.get("arguments"):
+                            if cmd.get("clickable") == True:
+                                text += "/" + cmd.get("command") +" "+ cmd.get("arguments")
                             else:
-                                text += "`/" + command.get("command") +" "+ command.get("arguments") + "`"
+                                text += "`/" + cmd.get("command") +" "+ cmd.get("arguments") + "`"
                         else:
-                            text += "/" + command.get("command")
+                            text += "/" + cmd.get("command")
                         
-                        text += " - " + command.get("usage")
-                        if command.get("moreinfo"):
-                            text += "\n\n" + command.get("moreinfo")
+                        text += " - " + cmd.get("usage")
+                        if cmd.get("moreinfo"):
+                            text += "\n\n" + cmd.get("moreinfo")
                         
                         reply(text)
                         return
                 reply("Command `" + text + "` not found!")
             elif command == "generatecommandlist":
                 text = "info - Quick Command info: On Mobile, scroll to a command and Tap-and-Hold to insert. On Desktop, use the arrow keys to highlight a command and Tab to insert."
-                for command in WebhookHandler(self).generateCommandDict():
+                for cmd in WebhookHandler(self).generateCommandDict():
                     text += "\n"
-                    if command.get("command") == "help":
+                    if cmd.get("command") == "help":
                         text += "help - <command> - Show available commands, or show help for <command>"
                         continue
                     
-                    if command.get("arguments"):
-                        text += command.get("command").lower() + " - " + command.get("arguments") + " - " + command.get("usage")
+                    if cmd.get("arguments"):
+                        text += cmd.get("command").lower() + " - " + cmd.get("arguments") + " - " + cmd.get("usage")
                     else:
-                        text += command.get("command").lower() + " - " + command.get("usage")
+                        text += cmd.get("command").lower() + " - " + cmd.get("usage")
                 text += "\nmsg - <text> - send the custom message with <text> on the end\nmymsg - <text> - send the custom message set in private chat with <text> on the end\nmsgset - <text> - sets the custom message to <text>\nmsgadd - <text> - adds <text> to the end\nmsginsert - <index> <text> - inserts <text> at the specified <index>\nmsgremove - <count> - removes <count> characters from the end"
                 reply(text)
             elif command in ["echo", "recho", "shout"] and text == "":
