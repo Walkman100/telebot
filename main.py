@@ -706,7 +706,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 if text == "":
                     reply("Custom message hasn't been set, use `/msgset <text>` to set it")
                 elif text.startswith(u'\xa7'):
-                    reply(text[1:], parse_mode="HTML") # [1:] is to remove the §
+                    reply(text[1:], parse_mode="HTML") # [1:] is to remove the section symbol
                 else:
                     reply(text)
             elif command == "mymsg":
