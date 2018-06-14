@@ -306,8 +306,9 @@ class WebhookHandler(webapp2.RequestHandler):
                 # helpText += "\n/"
                 reply_noreply(helpText)
             elif command == "help":
+                if text.startswith("/") or text.startswith("#") or text.startswith("!"): text = text[1:]
                 for cmd in WebhookHandler(self).generateCommandDict():
-                    if text == cmd.get("command"):
+                    if text.lower() == cmd.get("command").lower():
                         text = "Usage: "
                         
                         if cmd.get("arguments"):
