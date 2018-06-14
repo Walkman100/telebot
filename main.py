@@ -115,7 +115,7 @@ class WebhookHandler(webapp2.RequestHandler):
         commandDict.append({"command":"uecho", "arguments":"<text>", "usage":"Respond with `text` encoded with Unicode", "has_chat_mode":True, "chat_mode_prompt":"text to encode:", \
             "moreinfo":"Format is \u2211 (or u2211 for a single character). " + markdownInfoString + " Sending a unicode character results in an error, but can be used to find the sequence of unicode characters."})
         commandDict.append({"command":"shout", "arguments":"<text>", "usage":"Shout `text` in caps", "has_chat_mode":True, "chat_mode_prompt":"text:", \
-            "moreinfo":"Sends a '3D' message of the input in caps, i.e. the input is sent across, down and diagonally. Do not use <> characters as the message is sent with HTML markup."})
+            "moreinfo":"Sends a '3D' message of the input in caps, i.e. the input is sent across, down and diagonally. Limit of 20 characters, as the message wraps on mobile and looks horrible. Do not use <> characters as the message is sent with HTML markup."})
         commandDict.append({"command":"image", "usage":"Send a 'randomly' generated image"})
         commandDict.append({"command":"getimg", "arguments":"<url>", "usage":"Return an image at `url`", "has_chat_mode":True, "chat_mode_prompt":"image url:", \
             "moreinfo":"This is retrieved with python2's urllib2.urlopen method, and seems to have a problem with ~10MB or bigger images."})
