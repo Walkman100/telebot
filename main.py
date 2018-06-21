@@ -106,9 +106,9 @@ class WebhookHandler(webapp2.RequestHandler):
                              "See this [GroupButler post](https://telegram.me/GroupButler_ch/46) for full description."
         
         commandDict.append({"command":"about", "usage":"Show version info"})
-        commandDict.append({"command":"help", "arguments":"<command>", "usage":"Show this help, or show help for <command>", "clickable": True})
+        commandDict.append({"command":"help", "arguments":"<command>", "usage":"Show this help, or show help for <command>", "clickable":True})
         commandDict.append({"command":"whoAmI", "usage":"Get ID's and info about the user"})
-        commandDict.append({"command":"echo", "arguments":"<text>", "usage":"Respond with `text`",  "has_chat_mode":True, "chat_mode_prompt":"text:", \
+        commandDict.append({"command":"echo", "arguments":"<text>", "usage":"Respond with `text`", "has_chat_mode":True, "chat_mode_prompt":"text:", \
             "moreinfo": markdownInfoString})
         commandDict.append({"command":"recho", "arguments":"<text>", "usage":"Respond with `text` reversed", "has_chat_mode":True, "chat_mode_prompt":"text:", \
             "moreinfo": markdownInfoString})
@@ -135,8 +135,16 @@ class WebhookHandler(webapp2.RequestHandler):
             "moreinfo":"Since the bot runs python, this uses python operators to run calculations, in the form of `<number> <operator> <number>` - operators can be any of +/-/\*, and also:\n" + \
             "Divide (true): /\nDivide (floor): //\nModulus Division: %\nExponent: \*\*\nConcatenation: +\n" + \
             "You can also use this function to call random functions in the bots code, see the last link in /about, e.g. `/calc (str(reply_noreply('1')) + str(reply_noreply('2')) + str(reply_noreply('3')) + str(reply_noreply('4')) + str(reply_noreply('5')))[20:] + '6'`"})
-        #commandDict.append({"command":"", "arguments":"", "usage":"", "moreinfo":"", "has_chat_mode":True, "chat_mode_prompt":""})
+        commandDict.append({"command":"msgset", "arguments":"<text>", "usage":"sets chat custom message to `text`", "moreinfo":""})
+        commandDict.append({"command":"msgadd", "arguments":"<text>", "usage":"adds `text` to the end", "moreinfo":""})
+        commandDict.append({"command":"msginsert", "arguments":"<index> <text>", "usage":"inserts `text` at the specified `index`", "moreinfo":""})
+        commandDict.append({"command":"msgremove", "arguments":"<count>", "usage":"removes `count` characters from the end", "moreinfo":""})
+        commandDict.append({"command":"msg", "arguments":"<text>", "usage":"send chat custom message with `text` on the end", "clickable":True, \
+            "moreinfo":"Start the message with `" + u'\xa7' + "` to make it parse in HTML instead of markdown - for the use of this, see this [GroupButler post](https://telegram.me/GroupButler_ch/46) - specifically the part about bots not being able to respond at all if markdown is incorrect. Note that this also applies to HTML parsing, so you can't have an HTML-parsed message with incorrect `<>` tags."})
+        commandDict.append({"command":"mymsg", "arguments":"<text>", "usage":"send user's custom message with `text` on the end", "clickable":True, \
+            "moreinfo":"Use `/msgset <text>` in a private chat (@WalkmanBot) to set your user custom message, then you can use `/mymsg` in any group to use it. See /help_msg for other applicable info."})
         
+        #commandDict.append({"command":"", "arguments":"", "usage":"", "clickable":True, "has_chat_mode":True, "chat_mode_prompt":"", "moreinfo":""})
         return commandDict
     
     def post(self):
@@ -295,15 +303,10 @@ class WebhookHandler(webapp2.RequestHandler):
                             helpText += "`/" + cmd.get("command") +" "+ cmd.get("arguments") + "` - " + cmd.get("usage")
                     else:
                         helpText += "/" + cmd.get("command") + " - " + cmd.get("usage")
+                    
+                    if cmd.get("command") == "calc":
+                        helpText += "\n\n*Custom Message* - send /help\_msg for info"
                 
-                helpText += "\n\n*Custom Message*"
-                helpText += "\n`/msgset <text>` - sets the custom message to `text`"
-                helpText += "\n`/msgadd <text>` - adds `text` to the end"
-                helpText += "\n`/msginsert <index> <text>` - inserts `text` at the specified `index`"
-                helpText += "\n`/msgremove <count>` - removes `count` characters from the end"
-                helpText += "\n/msg <text> - send the custom message with `text` on the end, start with " + u'\xa7' + " for HTML instead of markdown"
-                helpText += "\n/mymsg <text> - send the custom message set in private chat with `text` on the end"
-                # helpText += "\n/"
                 reply_noreply(helpText)
             elif command == "help":
                 if text.startswith("/") or text.startswith("#") or text.startswith("!"): text = text[1:]
@@ -326,6 +329,8 @@ class WebhookHandler(webapp2.RequestHandler):
                         reply(text)
                         return
                 reply("Command `" + text + "` not found!")
+            elif command == "help_msg": # alias for `help msg`
+                processCommands("help", "msg", chat_id)
             elif command == "generatecommandlist":
                 text = "info - Quick Command info: On Mobile, scroll to a command and Tap-and-Hold to insert. On Desktop, use the arrow keys to highlight a command and Tab to insert."
                 for cmd in WebhookHandler(self).generateCommandDict():
