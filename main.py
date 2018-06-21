@@ -106,13 +106,13 @@ class WebhookHandler(webapp2.RequestHandler):
                              "See this [GroupButler post](https://telegram.me/GroupButler_ch/46) for full description."
         
         commandDict.append({"command":"about", "usage":"Show version info"})
-        commandDict.append({"command":"help", "arguments":"<command>", "usage":"Show this help, or show help for <command>", "clickable":True})
+        commandDict.append({"command":"help", "arguments":"\[command]", "usage":"Show this help or help for <command>", "clickable":True})
         commandDict.append({"command":"whoAmI", "usage":"Get ID's and info about the user"})
         commandDict.append({"command":"echo", "arguments":"<text>", "usage":"Respond with `text`", "has_chat_mode":True, "chat_mode_prompt":"text:", \
             "moreinfo": markdownInfoString})
         commandDict.append({"command":"recho", "arguments":"<text>", "usage":"Respond with `text` reversed", "has_chat_mode":True, "chat_mode_prompt":"text:", \
             "moreinfo": markdownInfoString})
-        commandDict.append({"command":"uecho", "arguments":"<text>", "usage":"Respond with `text` encoded with Unicode", "has_chat_mode":True, "chat_mode_prompt":"text to encode:", \
+        commandDict.append({"command":"uecho", "arguments":"<text>", "usage":"Encode `text` with Unicode", "has_chat_mode":True, "chat_mode_prompt":"text to encode:", \
             "moreinfo":"Format is \u2211 (or u2211 for a single character). " + markdownInfoString + " Sending a unicode character results in an error, but can be used to find the sequence of unicode characters."})
         commandDict.append({"command":"shout", "arguments":"<text>", "usage":"Shout `text` in caps", "has_chat_mode":True, "chat_mode_prompt":"text:", \
             "moreinfo":"Sends a '3D' message of the input in caps, i.e. the input is sent across, down and diagonally. Limit of 20 characters, as the message wraps on mobile and looks horrible. Do not use <> characters as the message is sent with HTML markup."})
@@ -121,10 +121,10 @@ class WebhookHandler(webapp2.RequestHandler):
             "moreinfo":"This is retrieved with python2's urllib2.urlopen method, and seems to have a problem with ~10MB or bigger images."})
         commandDict.append({"command":"preview", "arguments":"<url>", "usage":"Get a preview image of webpage `url`", "has_chat_mode":True, "chat_mode_prompt":"page url:", \
             "moreinfo":"Generated using pagepeeker.com, which requires you request the image to be generated, then send a second request once it has been generated in order to get the image."})
-        commandDict.append({"command":"expand", "arguments":"<url>", "usage":"Get expanded version of `url` using goo.gl/IGL1lE", "has_chat_mode":True, "chat_mode_prompt":"short url:", \
-            "moreinfo":"unshorten.me doesn't take anything after a ? through the API, go to the service directly in order to expand those URLs."})
-        commandDict.append({"command":"curl", "arguments":"<url>", "usage":"Return contents of `url` (Warning: reply could be very long!)", "has_chat_mode":True, "chat_mode_prompt":"url:", \
-            "moreinfo":"Most errors occur from unicode characters in the source."})
+        commandDict.append({"command":"expand", "arguments":"<url>", "usage":"Get expanded version of `url`", "has_chat_mode":True, "chat_mode_prompt":"short url:", \
+            "moreinfo":"Uses goo.gl/IGL1lE. unshorten.me doesn't take anything after a ? through the API, go to the service directly in order to expand those URLs."})
+        commandDict.append({"command":"curl", "arguments":"<url>", "usage":"Return contents of `url`", "has_chat_mode":True, "chat_mode_prompt":"url:", \
+            "moreinfo":"Warning: reply could be very long!\nMost errors occur from unicode characters in the source."})
         commandDict.append({"command":"r2a", "arguments":"<roman numerals>", "usage":"Convert Roman Numerals to Arabic numbers", "has_chat_mode":True, "chat_mode_prompt":"roman numerals:"})
         commandDict.append({"command":"a2r", "arguments":"<arabic number>", "usage":"Convert Arabic numbers to Roman Numerals", "has_chat_mode":True, "chat_mode_prompt":"arabic number:"})
         commandDict.append({"command":"roll", "arguments":"<number of die>d<sides of die>", "usage":"Return `number of die` amount of random numbers from 1 to `sides of die`", "has_chat_mode":True, "chat_mode_prompt":"<number of die>d<sides of die>:", \
@@ -136,13 +136,13 @@ class WebhookHandler(webapp2.RequestHandler):
             "Divide (true): /\nDivide (floor): //\nModulus Division: %\nExponent: \*\*\nConcatenation: +\n" + \
             "You can also use this function to call random functions in the bots code, see the last link in /about, e.g. `/calc (str(reply_noreply('1')) + str(reply_noreply('2')) + str(reply_noreply('3')) + str(reply_noreply('4')) + str(reply_noreply('5')))[20:] + '6'`"})
         commandDict.append({"command":"msgset", "arguments":"<text>", "usage":"sets chat custom message to `text`", "moreinfo":""})
-        commandDict.append({"command":"msgadd", "arguments":"<text>", "usage":"adds `text` to the end", "moreinfo":""})
+        commandDict.append({"command":"msgadd", "arguments":"<text>", "usage":"appends `text` to chat message", "moreinfo":""})
         commandDict.append({"command":"msginsert", "arguments":"<index> <text>", "usage":"inserts `text` at the specified `index`", "moreinfo":""})
         commandDict.append({"command":"msgremove", "arguments":"<count>", "usage":"removes `count` characters from the end", "moreinfo":""})
-        commandDict.append({"command":"msg", "arguments":"<text>", "usage":"send chat custom message with `text` on the end", "clickable":True, \
+        commandDict.append({"command":"msg", "arguments":"\[text]", "usage":"send chat custom message with `text` appended", "clickable":True, \
             "moreinfo":"Start the message with `" + u'\xa7' + "` to make it parse in HTML instead of markdown - for the use of this, see this [GroupButler post](https://telegram.me/GroupButler_ch/46) - specifically the part about bots not being able to respond at all if markdown is incorrect. Note that this also applies to HTML parsing, so you can't have an HTML-parsed message with incorrect `<>` tags."})
-        commandDict.append({"command":"mymsg", "arguments":"<text>", "usage":"send user's custom message with `text` on the end", "clickable":True, \
-            "moreinfo":"Use `/msgset <text>` in a private chat (@WalkmanBot) to set your user custom message, then you can use `/mymsg` in any group to use it. See /help_msg for other applicable info."})
+        commandDict.append({"command":"mymsg", "arguments":"\[text]", "usage":"send user's custom message with `text` appended", "clickable":True, \
+            "moreinfo":"Use `/msgset <text>` in a private chat (@WalkmanBot) to set your user custom message, then you can use `/mymsg` in any group to use it. See /help\_msg for other applicable info."})
         
         #commandDict.append({"command":"", "arguments":"", "usage":"", "clickable":True, "has_chat_mode":True, "chat_mode_prompt":"", "moreinfo":""})
         return commandDict
