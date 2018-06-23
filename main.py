@@ -289,6 +289,20 @@ class WebhookHandler(webapp2.RequestHandler):
             if command.startswith("r/"):
                 pass
             
+            if text == "":
+                for cmd in WebhookHandler(self).generateCommandDict():
+                    if command == cmd.get("command").lower():
+                        if cmd.get("arguments") <> None and cmd.get("clickable") <> True:
+                            if cmd.get("has_chat_mode") == True and chat.get("type") == "private":
+                                setLastAction(str(fr["id"]), command)
+                                text = "Enter " + cmd.get("chat_mode_prompt")
+                            else:
+                                text = "Usage: `/" + cmd.get("command") +" "+ cmd.get("arguments") +"` - "+ cmd.get("usage")
+                            
+                            reply(text)
+                            return
+            
+            
             # Usage
             if command == "help" and text == "":
                 helpText = "*Available commands*"
@@ -345,72 +359,6 @@ class WebhookHandler(webapp2.RequestHandler):
                         text += cmd.get("command").lower() + " - " + cmd.get("usage")
                 text += "\nmsg - <text> - send the custom message with <text> on the end\nmymsg - <text> - send the custom message set in private chat with <text> on the end\nmsgset - <text> - sets the custom message to <text>\nmsgadd - <text> - adds <text> to the end\nmsginsert - <index> <text> - inserts <text> at the specified <index>\nmsgremove - <count> - removes <count> characters from the end"
                 reply(text)
-            elif command in ["echo", "recho", "shout"] and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter text:")
-                else:
-                    reply("Usage: `/" + command + " <text>`")
-            elif command == "uecho" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter text to encode:")
-                else:
-                    reply("Usage: `/uecho <unicode sequence>`")
-            elif command == "getimg" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter image url:")
-                else:
-                    reply("Usage: `/getimg <url>`")
-            elif command == "preview" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter page url:")
-                else:
-                    reply("Usage: `/preview <url>`")
-            elif command == "expand" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter short url:")
-                else:
-                    reply("Usage: `/expand <url>`")
-            elif command == "curl" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter url:")
-                else:
-                    reply("Usage: `/curl <url>`")
-            elif command == "r2a" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter roman numerals:")
-                else:
-                    reply("Usage: `/r2a <roman numerals>`")
-            elif command == "a2r" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter arabic number:")
-                else:
-                    reply("Usage: `/a2r <arabic number>`")
-            elif command == "roll" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter <number of die>d<sides of die>:")
-                else:
-                    reply("Usage: `/roll <number of die>d<sides of die>`")
-            elif command == "randbetween" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter <start> <end>:")
-                else:
-                    reply("Usage: `/randbetween <start> <end>`")
-            elif command == "calc" and text == "":
-                if chat.get("type") == "private":
-                    setLastAction(str(fr["id"]), command)
-                    reply("Enter expression:")
-                else:
-                    reply("Usage: `/calc <expression>`")
             
             # Simple response (no computation)
             elif command == "start":
