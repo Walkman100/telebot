@@ -135,10 +135,10 @@ class WebhookHandler(webapp2.RequestHandler):
             "moreinfo":"Since the bot runs python, this uses python operators to run calculations, in the form of `<number> <operator> <number>` - operators can be any of +/-/\*, and also:\n" + \
             "Divide (true): /\nDivide (floor): //\nModulus Division: %\nExponent: \*\*\nConcatenation: +\n" + \
             "You can also use this function to call random functions in the bots code, see the last link in /about, e.g. `/calc (str(reply_noreply('1')) + str(reply_noreply('2')) + str(reply_noreply('3')) + str(reply_noreply('4')) + str(reply_noreply('5')))[20:] + '6'`"})
-        commandDict.append({"command":"msgset", "arguments":"<text>", "usage":"sets chat custom message to `text`", "moreinfo":""})
-        commandDict.append({"command":"msgadd", "arguments":"<text>", "usage":"appends `text` to chat message", "moreinfo":""})
-        commandDict.append({"command":"msginsert", "arguments":"<index> <text>", "usage":"inserts `text` at the specified `index`", "moreinfo":""})
-        commandDict.append({"command":"msgremove", "arguments":"<count>", "usage":"removes `count` characters from the end", "moreinfo":""})
+        commandDict.append({"command":"msgset", "arguments":"<text>", "usage":"sets chat custom message to `text`"})
+        commandDict.append({"command":"msgadd", "arguments":"<text>", "usage":"appends `text` to chat message"})
+        commandDict.append({"command":"msginsert", "arguments":"<index> <text>", "usage":"inserts `text` at the specified `index`"})
+        commandDict.append({"command":"msgremove", "arguments":"<count>", "usage":"removes `count` characters from the end"})
         commandDict.append({"command":"msg", "arguments":"\[text]", "usage":"send chat custom message with `text` appended", "clickable":True, \
             "moreinfo":"Start the message with `" + u'\xa7' + "` to make it parse in HTML instead of markdown - for the use of this, see this [GroupButler post](https://telegram.me/GroupButler_ch/46) - specifically the part about bots not being able to respond at all if markdown is incorrect. Note that this also applies to HTML parsing, so you can't have an HTML-parsed message with incorrect `<>` tags."})
         commandDict.append({"command":"mymsg", "arguments":"\[text]", "usage":"send user's custom message with `text` appended", "clickable":True, \
@@ -290,7 +290,7 @@ class WebhookHandler(webapp2.RequestHandler):
                 pass
             
             # Usage
-            elif command == "help" and text =="":
+            if command == "help" and text == "":
                 helpText = "*Available commands*"
                 # apparently because it's not global it needs to be called explicitly
                 # http://i0.kym-cdn.com/photos/images/newsfeed/000/187/270/1318822944910.jpg
@@ -787,7 +787,8 @@ class WebhookHandler(webapp2.RequestHandler):
             elif chat.get("type") == "private" and getLastAction(str(fr.get("id"))) <> "none":
                 processCommands( getLastAction(str(fr.get("id"))), command + " " + text, chat_id )
             elif getUnknownCommandEnabled(chat_id):
-                if "fuck off" in (command + " " + text).lower() or "shut the fuck up" in (command + " " + text).lower():
+                text = (command + " " + text).lower()
+                if "fuck off" in text or "shut up" in text or "shut the fuck up" in text:
                     reply("Use /ucs to turn off Unknown Command messages")
                 else:
                     reply("Unknown command `" + command + "`. Use /help to see existing commands")
