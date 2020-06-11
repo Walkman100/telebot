@@ -351,11 +351,14 @@ class WebhookHandler(webapp2.RequestHandler):
                 for cmd in WebhookHandler(self).generateCommandDict():
                     text += "\n"
                     if cmd.get("command") == "help":
-                        text += "help - <command> - Show available commands, or show help for <command>"
+                        text += cmd.get("command").lower() + " - " + cmd.get("arguments") + " - Show available commands, or show help for <command>"
                         continue
                     
                     if cmd.get("arguments"):
-                        text += cmd.get("command").lower() + " - " + cmd.get("arguments") + " - " + cmd.get("usage")
+                        if cmd.get("clickable") == True:
+                            text += cmd.get("command").lower() + " - " + cmd.get("arguments") + " - " + cmd.get("usage")
+                        else:
+                            text += cmd.get("command").lower() + " - `" + cmd.get("arguments") + "` - " + cmd.get("usage")
                     else:
                         text += cmd.get("command").lower() + " - " + cmd.get("usage")
                 text += "\nmsg - <text> - send the custom message with <text> on the end\nmymsg - <text> - send the custom message set in private chat with <text> on the end\nmsgset - <text> - sets the custom message to <text>\nmsgadd - <text> - adds <text> to the end\nmsginsert - <index> <text> - inserts <text> at the specified <index>\nmsgremove - <count> - removes <count> characters from the end"
