@@ -189,7 +189,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         ("photo", "image.jpg", img),
                     ])
                 else:
-                    logging.error("no msg or img specified")
+                    logging.warning("no msg or img specified")
                     resp = None
 
                 logging.info("send response: " + str(resp))
@@ -213,7 +213,7 @@ class WebhookHandler(webapp2.RequestHandler):
                         ("photo", "image.jpg", img),
                     ])
                 else:
-                    logging.error("no msg or img specified")
+                    logging.warning("no msg or img specified")
                     resp = None
 
                 logging.info("send response: " + str(resp))
