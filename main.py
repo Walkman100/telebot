@@ -497,8 +497,34 @@ class WebhookHandler(webapp2.RequestHandler):
                     reply("ERROR: `" + str(err) + "`")
             elif command == "roll":
                 sendText = ""
-                inputArgs = text.split("d")
                 
+                modifier = 0
+                if "+" in text:
+                    inputArgs = text.split("+")
+                    if len(inputArgs) == 2:
+                        if numeralconverter.is_number(inputArgs[1]):
+                            modifier = int(inputArgs[1])
+                            text = inputArgs[0]
+                        else:
+                            reply("`" + inputArgs[1] + "` isn't a number!")
+                            return
+                    else:
+                        reply("`" + text + "` contains more than one `+`!")
+                        return
+                elif "-" in text:
+                    inputArgs = text.split("-")
+                    if len(inputArgs) == 2:
+                        if numeralconverter.is_number(inputArgs[1]):
+                            modifier = -int(inputArgs[1])
+                            text = inputArgs[0]
+                        else:
+                            reply("`" + inputArgs[1] + "` isn't a number!")
+                            return
+                    else:
+                        reply("`" + text + "` contains more than one `-`!")
+                        return
+                
+                inputArgs = text.split("d")
                 if len(inputArgs) <> 2:
                     reply("`" + text + "` does not contain one `d`!")
                     return
@@ -508,7 +534,9 @@ class WebhookHandler(webapp2.RequestHandler):
                 if numeralconverter.is_number(inputArgs[0]) and numeralconverter.is_number(inputArgs[1]):
                     i = 0
                     while i < int(inputArgs[0]):
-                        sendText += "\n" + str(random.randint(1, int(inputArgs[1])))
+                        diceResult = random.randint(1, int(inputArgs[1]))
+                        
+                        sendText += "\n" + str(diceResult + modifier)
                         i += 1
                     reply(sendText)
                 else:
