@@ -127,8 +127,9 @@ class WebhookHandler(webapp2.RequestHandler):
             "moreinfo":"Warning: reply could be very long!\nMost errors occur from unicode characters in the source."})
         commandDict.append({"command":"r2a", "arguments":"<roman numerals>", "usage":"Convert Roman Numerals to Arabic numbers", "has_chat_mode":True, "chat_mode_prompt":"roman numerals:"})
         commandDict.append({"command":"a2r", "arguments":"<arabic number>", "usage":"Convert Arabic numbers to Roman Numerals", "has_chat_mode":True, "chat_mode_prompt":"arabic number:"})
-        commandDict.append({"command":"roll", "arguments":"<number of die>d<sides of die>", "usage":"Return `number of die` amount of random numbers from 1 to `sides of die`", "has_chat_mode":True, "chat_mode_prompt":"<number of die>d<sides of die>:", \
-            "moreinfo":"Accepts input as d<sides of die> to roll 1 die"})
+        commandDict.append({"command":"roll", "arguments":"<number of die>d<sides of die> [+/- <modifier>]", "usage":"Return `number of die` amount of random numbers from 1 to `sides of die` optionally with `modifier` applied", \
+            "has_chat_mode":True, "chat_mode_prompt":"<number of die>d<sides of die> \[+/- <modifier>]:", \
+            "moreinfo":"Accepts input as `d<sides of die>` to roll 1 die. Spaces are unimportant (`2d20+5` is the same as `2 d 20 + 5`)"})
         commandDict.append({"command":"randbetween", "arguments":"<start> <end>", "usage":"Sends a random number between `start` and `end`", "has_chat_mode":True, "chat_mode_prompt":"<start> <end>:", \
             "moreinfo":"Entering numbers in reverse order errors (e.g. 50 20). Solution is to enter numbers the other way around."})
         commandDict.append({"command":"calc", "arguments":"<expression>", "usage":"evaluates `expression`", "has_chat_mode":True, "chat_mode_prompt":"expression:", \
